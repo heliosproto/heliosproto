@@ -13,7 +13,6 @@ interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
-
 export function ConfirmDialog({ open, simulation, onConfirm, onCancel }: ConfirmDialogProps) {
   const confirmRef = useRef<HTMLButtonElement>(null);
 

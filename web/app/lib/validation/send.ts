@@ -42,7 +42,6 @@ function crc16XModem(bytes: Uint8Array): number {
   return crc & 0xffff;
 }
 
-
 export function isValidStrKey(address: string, prefixes: readonly string[]): boolean {
   if (address.length !== STRKEY_LENGTH) {
     return false;

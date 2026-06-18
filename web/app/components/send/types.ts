@@ -3,7 +3,6 @@ import type { AssetCode, SendFormValues } from "@/lib/validation/send";
 /** The validated transaction the user intends to send. */
 export type SendPayload = SendFormValues;
 
-
 export interface SimulationResult {
   destination: string;
   asset: AssetCode;
@@ -12,7 +11,6 @@ export interface SimulationResult {
   /** Estimated network fee, denominated in XLM (stroops formatted as XLM). */
   feeEstimateXlm: string;
 }
-
 
 export function buildMockSimulation(payload: SendPayload): SimulationResult {
   return {

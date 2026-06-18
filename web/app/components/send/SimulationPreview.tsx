@@ -34,7 +34,6 @@ function Row({ label, value, mono }: RowProps) {
   );
 }
 
-
 export function SimulationPreview({ simulation, onConfirm, onEdit }: SimulationPreviewProps) {
   return (
     <section aria-label="Simulation preview" className="flex flex-col gap-4">

@@ -10,7 +10,6 @@ import {
 } from "react";
 import { cn } from "@/lib/cn";
 
-
 type ButtonVariant = "primary" | "secondary" | "ghost";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
