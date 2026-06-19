@@ -7,7 +7,6 @@ async function addVirtualAuthenticator(context: BrowserContext): Promise<string>
       protocol: "ctap2",
       transport: "internal",
       hasResidentKey: true,
-      isUserConsenting: true,
       isUserVerified: true,
     },
   });
@@ -71,7 +70,6 @@ test.describe("Passkey enrollment onboarding", () => {
         protocol: "ctap2",
         transport: "internal",
         hasResidentKey: true,
-        isUserConsenting: true,
         isUserVerified: true,
       },
     });

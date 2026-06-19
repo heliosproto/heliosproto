@@ -66,6 +66,13 @@ function base64ToBytes(base64: string): Uint8Array {
   return bytes;
 }
 
+export function crc16Checksum(payload: Uint8Array): number {
+  const versionPayload = new Uint8Array(1 + 32);
+  versionPayload[0] = CONTRACT_VERSION_BYTE;
+  versionPayload.set(payload, 1);
+  return crc16XModem(versionPayload);
+}
+
 /**
  * Predict the deterministic smart-account address for a given credential ID.
  *
@@ -78,7 +85,7 @@ function base64ToBytes(base64: string): Uint8Array {
  */
 export async function predictAccountAddress(credentialIdBase64: string): Promise<string> {
   const credentialBytes = base64ToBytes(credentialIdBase64);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", credentialBytes);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", credentialBytes.buffer as ArrayBuffer);
   const hash = new Uint8Array(hashBuffer);
 
   return encodeCAddress(hash);
