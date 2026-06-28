@@ -3,11 +3,15 @@ from __future__ import annotations
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+from auth.sep10 import router as sep10_router
+
 app = FastAPI(
     title="Helios Protocol API",
     description="REST + GraphQL gateway for the Helios wallet stack",
     version="0.1.0",
 )
+
+app.include_router(sep10_router)
 
 
 class HealthResponse(BaseModel):
