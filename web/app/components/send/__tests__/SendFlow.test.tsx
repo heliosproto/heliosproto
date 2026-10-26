@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import SendPage from "@/app/send/page";
+import SendPage from "@/app/app/send/page";
 import { ConfirmDialog } from "@/components/send/ConfirmDialog";
 import type { SimulationResult } from "@/components/send/types";
 
