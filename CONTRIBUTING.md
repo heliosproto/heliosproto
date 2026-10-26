@@ -23,6 +23,8 @@ You do **not** need a Stellar wallet to receive payment — Grantfox handles the
 
 The repo is a polyglot monorepo. You only need to set up the pillar you're working in.
 
+**First day:** start with the [developer setup guide](./docs/guides/developer-setup.md) if you want one path that installs the shared tools and verifies the contracts, web, and backend pillars.
+
 ### Contracts (Rust + Soroban)
 
 ```bash
