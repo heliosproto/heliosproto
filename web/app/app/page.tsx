@@ -2,8 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 const GITHUB_URL = "https://github.com/heliosproto/heliosproto";
-const SCF_URL =
-  "https://stellar.gitbook.io/scf-handbook/scf-awards/build-award/rfp-track";
+const SCF_URL = "https://stellar.gitbook.io/scf-handbook/scf-awards/build-award/rfp-track";
 
 export default function Landing() {
   return (
@@ -20,10 +19,7 @@ export default function Landing() {
           <Link href="#features" className="transition hover:text-foreground">
             Features
           </Link>
-          <Link
-            href="#how-it-works"
-            className="transition hover:text-foreground"
-          >
+          <Link href="#how-it-works" className="transition hover:text-foreground">
             How it works
           </Link>
           <a href={GITHUB_URL} className="transition hover:text-foreground">
@@ -48,9 +44,9 @@ export default function Landing() {
           The Stellar wallet where smart accounts are the point.
         </h1>
         <p className="max-w-2xl text-balance text-lg text-muted-foreground sm:text-xl">
-          Helios Wallet treats your Soroban smart account as the primary
-          identity. Passkey login, session keys, social recovery, and spending
-          limits enforced on-chain. No seed phrase by default.
+          Helios Wallet treats your Soroban smart account as the primary identity. Passkey login,
+          session keys, social recovery, and spending limits enforced on-chain. No seed phrase by
+          default.
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button size="lg" asChild>
@@ -65,10 +61,7 @@ export default function Landing() {
           <span className="hidden sm:inline" aria-hidden>
             ·
           </span>
-          <a
-            href={SCF_URL}
-            className="transition hover:text-foreground"
-          >
+          <a href={SCF_URL} className="transition hover:text-foreground">
             Stellar Community Fund v7.0 track
           </a>
           <span className="hidden sm:inline" aria-hidden>
@@ -83,10 +76,7 @@ export default function Landing() {
         className="mx-auto max-w-6xl px-6 py-16"
         aria-labelledby="features-heading"
       >
-        <h2
-          id="features-heading"
-          className="sr-only"
-        >
+        <h2 id="features-heading" className="sr-only">
           Features
         </h2>
         <div className="rounded-xl border border-dashed border-border bg-muted/40 p-12 text-center text-sm text-muted-foreground">
@@ -109,9 +99,7 @@ export default function Landing() {
 
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
-          <span>
-            Helios, open-source smart-account-native wallet for Stellar.
-          </span>
+          <span>Helios, open-source smart-account-native wallet for Stellar.</span>
           <div className="flex gap-6">
             <a href={GITHUB_URL} className="transition hover:text-foreground">
               GitHub
