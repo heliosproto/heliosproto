@@ -1,8 +1,57 @@
+import { Fingerprint, Gauge, Key, Puzzle, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 const GITHUB_URL = "https://github.com/heliosproto/heliosproto";
 const SCF_URL = "https://stellar.gitbook.io/scf-handbook/scf-awards/build-award/rfp-track";
+
+const FEATURES = [
+  {
+    icon: Fingerprint,
+    title: "Passkey login",
+    body: "Sign in with Face ID, Touch ID, or a hardware key. No seed phrase to lose, back up, or screenshot.",
+  },
+  {
+    icon: Key,
+    title: "Session keys",
+    body: "Grant a dApp a temporary signer with scope and expiry. Revoke anytime, straight from the wallet.",
+  },
+  {
+    icon: Users,
+    title: "Social recovery",
+    body: "Rotate your primary signer with M-of-N guardian approval. No central custodian, no help desk ticket.",
+  },
+  {
+    icon: Gauge,
+    title: "Spending limits",
+    body: "Per-token, per-period caps enforced on-chain. If a signer is compromised, the limit still holds.",
+  },
+  {
+    icon: Zap,
+    title: "Gasless flows",
+    body: "A paymaster covers transaction fees. Users can transact before they ever hold a cent of XLM.",
+  },
+  {
+    icon: Puzzle,
+    title: "Plugin policies",
+    body: "Compose your account from verified policy modules. Ship new rules without forking the core contract.",
+  },
+] as const;
+
+const STEPS = [
+  {
+    title: "Create",
+    body: "Enroll a passkey. Your Soroban smart account deploys at a deterministic address, no XLM required to start.",
+  },
+  {
+    title: "Protect",
+    body: "Add guardians for recovery. Set daily spending caps. Install session-key plugins for the dApps you use most.",
+  },
+  {
+    title: "Use",
+    body: "Send, receive, swap, and connect to Stellar dApps. Every signature runs through your plugins and policies.",
+  },
+] as const;
 
 export default function Landing() {
   return (
@@ -73,27 +122,74 @@ export default function Landing() {
 
       <section
         id="features"
-        className="mx-auto max-w-6xl px-6 py-16"
+        className="mx-auto max-w-6xl px-6 py-20"
         aria-labelledby="features-heading"
       >
-        <h2 id="features-heading" className="sr-only">
-          Features
-        </h2>
-        <div className="rounded-xl border border-dashed border-border bg-muted/40 p-12 text-center text-sm text-muted-foreground">
-          Features section lands next.
+        <div className="mx-auto mb-12 max-w-2xl text-center">
+          <h2
+            id="features-heading"
+            className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl"
+          >
+            Everything a smart account can do, in a wallet that treats it as the point.
+          </h2>
+          <p className="mt-4 text-balance text-base text-muted-foreground sm:text-lg">
+            Six primitives, enforced by Soroban contracts. No off-chain honor system.
+          </p>
         </div>
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((feature) => (
+            <li
+              key={feature.title}
+              className="group rounded-xl border border-border bg-card p-6 transition hover:border-foreground/20 hover:bg-accent/40"
+            >
+              <feature.icon
+                className="mb-4 h-6 w-6 text-foreground/80 transition group-hover:text-foreground"
+                aria-hidden
+              />
+              <h3 className="text-base font-semibold tracking-tight">{feature.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{feature.body}</p>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section
         id="how-it-works"
-        className="mx-auto max-w-6xl px-6 py-16"
+        className="border-t border-border bg-muted/30"
         aria-labelledby="how-it-works-heading"
       >
-        <h2 id="how-it-works-heading" className="sr-only">
-          How it works
-        </h2>
-        <div className="rounded-xl border border-dashed border-border bg-muted/40 p-12 text-center text-sm text-muted-foreground">
-          How-it-works section lands next.
+        <div className="mx-auto max-w-6xl px-6 py-20">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <h2
+              id="how-it-works-heading"
+              className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl"
+            >
+              Three steps. No seed phrase.
+            </h2>
+            <p className="mt-4 text-balance text-base text-muted-foreground sm:text-lg">
+              Enroll a passkey, set your policies, use any Stellar dApp. Every signature runs
+              through your account's rules.
+            </p>
+          </div>
+          <ol className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {STEPS.map((step, index) => (
+              <li
+                key={step.title}
+                className="relative rounded-xl border border-border bg-background p-6"
+              >
+                <span className="absolute -top-3 left-6 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-foreground px-2 text-xs font-semibold text-background">
+                  {index + 1}
+                </span>
+                <h3 className="mt-2 text-base font-semibold tracking-tight">{step.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-10 flex justify-center">
+            <Button size="lg" asChild>
+              <Link href="/app/onboard">Create a wallet</Link>
+            </Button>
+          </div>
         </div>
       </section>
 
