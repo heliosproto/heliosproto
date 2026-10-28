@@ -18,7 +18,8 @@
       "!**/.next",
       "!**/dist",
       "!**/.turbo",
-      "!**/coverage"
+      "!**/coverage",
+      "!**/.vercel"
     ]
   },
   "formatter": {

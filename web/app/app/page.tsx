@@ -55,11 +55,11 @@ const STEPS = [
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
+    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
+      <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2">
           <div
-            className="h-7 w-7 rounded-md bg-gradient-to-br from-amber-400 to-orange-600"
+            className="h-7 w-7 rounded-md bg-gradient-to-br from-pink-400 via-rose-500 to-fuchsia-600 shadow-lg shadow-pink-500/30"
             aria-hidden
           />
           <span className="text-base font-semibold tracking-tight">Helios</span>
@@ -85,38 +85,53 @@ export default function Landing() {
         </div>
       </header>
 
-      <section className="mx-auto flex max-w-5xl flex-col items-center gap-8 px-6 pb-16 pt-16 text-center sm:pt-24">
-        <span className="rounded-full border border-border bg-muted px-4 py-1.5 text-xs font-medium tracking-wide text-muted-foreground">
-          v0.1.0 alpha, testnet only
-        </span>
-        <h1 className="max-w-4xl text-balance text-5xl font-semibold tracking-tight sm:text-6xl">
-          The Stellar wallet where smart accounts are the point.
-        </h1>
-        <p className="max-w-2xl text-balance text-lg text-muted-foreground sm:text-xl">
-          Helios Wallet treats your Soroban smart account as the primary identity. Passkey login,
-          session keys, social recovery, and spending limits enforced on-chain. No seed phrase by
-          default.
-        </p>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button size="lg" asChild>
-            <Link href="/app">Launch wallet (testnet)</Link>
-          </Button>
-          <Button size="lg" variant="outline" asChild>
-            <a href={GITHUB_URL}>View on GitHub</a>
-          </Button>
-        </div>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
-          <span>Apache 2.0</span>
-          <span className="hidden sm:inline" aria-hidden>
-            ·
+      <section className="relative overflow-hidden">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-8 -z-0 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-gradient-to-br from-pink-500/40 via-fuchsia-500/30 to-rose-400/20 blur-3xl animate-helios-blob"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute right-[12%] top-32 -z-0 h-[320px] w-[320px] rounded-full bg-gradient-to-br from-rose-400/30 to-pink-600/20 blur-3xl animate-helios-blob-reverse"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-[8%] top-56 -z-0 h-[280px] w-[280px] rounded-full bg-gradient-to-br from-fuchsia-400/25 to-pink-500/10 blur-3xl animate-helios-blob"
+        />
+
+        <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center gap-8 px-6 pb-16 pt-16 text-center sm:pt-24">
+          <span className="animate-in fade-in-0 slide-in-from-bottom-4 rounded-full border border-border bg-background/60 px-4 py-1.5 text-xs font-medium tracking-wide text-muted-foreground backdrop-blur duration-700">
+            v0.1.0 alpha, testnet only
           </span>
-          <a href={SCF_URL} className="transition hover:text-foreground">
-            Stellar Community Fund v7.0 track
-          </a>
-          <span className="hidden sm:inline" aria-hidden>
-            ·
-          </span>
-          <span>Smart-account native</span>
+          <h1 className="max-w-4xl animate-in fade-in-0 slide-in-from-bottom-4 text-balance text-5xl font-semibold tracking-tight delay-100 duration-700 sm:text-6xl">
+            The Stellar wallet where smart accounts are the point.
+          </h1>
+          <p className="max-w-2xl animate-in fade-in-0 slide-in-from-bottom-4 text-balance text-lg text-muted-foreground delay-200 duration-700 sm:text-xl">
+            Helios Wallet treats your Soroban smart account as the primary identity. Passkey login,
+            session keys, social recovery, and spending limits enforced on-chain. No seed phrase by
+            default.
+          </p>
+          <div className="flex animate-in flex-col gap-3 fade-in-0 slide-in-from-bottom-4 delay-300 duration-700 sm:flex-row">
+            <Button size="lg" asChild>
+              <Link href="/app">Launch wallet (testnet)</Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <a href={GITHUB_URL}>View on GitHub</a>
+            </Button>
+          </div>
+          <div className="mt-6 flex animate-in flex-wrap items-center justify-center gap-x-6 gap-y-2 fade-in-0 text-xs text-muted-foreground delay-500 duration-1000">
+            <span>Apache 2.0</span>
+            <span className="hidden sm:inline" aria-hidden>
+              ·
+            </span>
+            <a href={SCF_URL} className="transition hover:text-foreground">
+              Stellar Community Fund v7.0 track
+            </a>
+            <span className="hidden sm:inline" aria-hidden>
+              ·
+            </span>
+            <span>Smart-account native</span>
+          </div>
         </div>
       </section>
 
@@ -140,14 +155,18 @@ export default function Landing() {
           {FEATURES.map((feature) => (
             <li
               key={feature.title}
-              className="group rounded-xl border border-border bg-card p-6 transition hover:border-foreground/20 hover:bg-accent/40"
+              className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 transition hover:border-pink-500/40 hover:shadow-lg hover:shadow-pink-500/5"
             >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-16 -top-16 h-32 w-32 rounded-full bg-gradient-to-br from-pink-500/0 via-rose-500/0 to-fuchsia-500/0 blur-2xl transition duration-500 group-hover:from-pink-500/30 group-hover:via-rose-500/20 group-hover:to-fuchsia-500/10"
+              />
               <feature.icon
-                className="mb-4 h-6 w-6 text-foreground/80 transition group-hover:text-foreground"
+                className="relative mb-4 h-6 w-6 text-foreground/80 transition group-hover:text-foreground"
                 aria-hidden
               />
-              <h3 className="text-base font-semibold tracking-tight">{feature.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{feature.body}</p>
+              <h3 className="relative text-base font-semibold tracking-tight">{feature.title}</h3>
+              <p className="relative mt-2 text-sm text-muted-foreground">{feature.body}</p>
             </li>
           ))}
         </ul>
@@ -175,9 +194,9 @@ export default function Landing() {
             {STEPS.map((step, index) => (
               <li
                 key={step.title}
-                className="relative rounded-xl border border-border bg-background p-6"
+                className="relative rounded-xl border border-border bg-background p-6 transition hover:border-pink-500/40"
               >
-                <span className="absolute -top-3 left-6 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-foreground px-2 text-xs font-semibold text-background">
+                <span className="-top-3 absolute left-6 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 via-rose-500 to-fuchsia-600 px-2 text-xs font-semibold text-white shadow-md shadow-pink-500/30">
                   {index + 1}
                 </span>
                 <h3 className="mt-2 text-base font-semibold tracking-tight">{step.title}</h3>
