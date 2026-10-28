@@ -2,6 +2,8 @@
 
 An open-source smart-account-native wallet for the Stellar ecosystem, built around Soroban C-addresses as the primary identity.
 
+**Live:** [heliosproto.vercel.app](https://heliosproto.vercel.app)
+
 > **Status: v0.1.0-alpha, in active development.** Smart-account core contract, `allowlist` and `spending-limits` plugins are implemented and unit tested. Passkey enrollment (WebAuthn) is shipping to testnet. Full architecture: [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ## What this is
