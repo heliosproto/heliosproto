@@ -131,3 +131,31 @@ body {
     @apply font-sans;
   }
 }
+
+@keyframes helios-blob {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(24px, -28px, 0) scale(1.08);
+  }
+}
+
+@keyframes helios-blob-reverse {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-32px, 20px, 0) scale(0.94);
+  }
+}
+
+.animate-helios-blob {
+  animation: helios-blob 14s ease-in-out infinite;
+}
+
+.animate-helios-blob-reverse {
+  animation: helios-blob-reverse 18s ease-in-out infinite;
+}
