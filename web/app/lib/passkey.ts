@@ -47,8 +47,8 @@ export async function createPasskey(walletName?: string): Promise<PasskeyCredent
     timeout: 60000,
     attestation: "none",
     authenticatorSelection: {
-      authenticatorAttachment: "platform",
       userVerification: "required",
+      residentKey: "preferred",
     },
   };
 
