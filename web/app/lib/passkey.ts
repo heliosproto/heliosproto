@@ -24,10 +24,13 @@ export interface PasskeyCredential {
   publicKey: string;
 }
 
-export async function createPasskey(): Promise<PasskeyCredential> {
+export async function createPasskey(walletName?: string): Promise<PasskeyCredential> {
   const challenge = crypto.getRandomValues(new Uint8Array(32));
 
   const userId = crypto.getRandomValues(new Uint8Array(32));
+
+  const trimmed = walletName?.trim();
+  const effectiveName = trimmed && trimmed.length > 0 ? trimmed : "Helios Wallet";
 
   const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
     challenge,
@@ -37,15 +40,15 @@ export async function createPasskey(): Promise<PasskeyCredential> {
     },
     user: {
       id: userId,
-      name: "helios-wallet-user",
-      displayName: "Helios Wallet User",
+      name: effectiveName,
+      displayName: effectiveName,
     },
     pubKeyCredParams: [{ alg: -7, type: "public-key" }],
     timeout: 60000,
     attestation: "none",
     authenticatorSelection: {
-      authenticatorAttachment: "platform",
       userVerification: "required",
+      residentKey: "preferred",
     },
   };
 
