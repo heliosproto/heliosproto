@@ -46,7 +46,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
         setTimeout(() => setCopied(false), 1600);
       })
       .catch(() => {
-        /* clipboard not available, ignore */
+        /* clipboard not available */
       });
   }, [value]);
 
@@ -58,7 +58,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
       className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground"
     >
       {copied ? (
-        <Check className="h-3.5 w-3.5 text-pink-500" aria-hidden />
+        <Check className="h-3.5 w-3.5 text-mint" aria-hidden />
       ) : (
         <Copy className="h-3.5 w-3.5" aria-hidden />
       )}
@@ -88,18 +88,12 @@ export default function OnboardPage() {
           const accountAddress = await predictAccountAddress(passkey.credentialId);
           if (cancelled) return;
 
-          setState({
-            status: "complete",
-            credential: passkey,
-            accountAddress,
-          });
+          setState({ status: "complete", credential: passkey, accountAddress });
         } else {
           setState({ status: "welcome" });
         }
       } catch {
-        if (!cancelled) {
-          setState({ status: "welcome" });
-        }
+        if (!cancelled) setState({ status: "welcome" });
       }
     }
 
@@ -117,18 +111,11 @@ export default function OnboardPage() {
 
       try {
         const passkey = await createPasskey(walletName);
-
         const credentialIdBytes = base64ToBytes(passkey.credentialId);
         const publicKeyBytes = base64ToBytes(passkey.publicKey);
         await storeCredential(credentialIdBytes, publicKeyBytes);
-
         const accountAddress = await predictAccountAddress(passkey.credentialId);
-
-        setState({
-          status: "complete",
-          credential: passkey,
-          accountAddress,
-        });
+        setState({ status: "complete", credential: passkey, accountAddress });
       } catch (err) {
         if (err instanceof DOMException && err.name === "NotAllowedError") {
           setState({
@@ -150,21 +137,27 @@ export default function OnboardPage() {
   );
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-16 -z-0 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-gradient-to-br from-pink-500/25 via-fuchsia-500/20 to-rose-400/10 blur-3xl animate-helios-blob"
-      />
+    <div className="relative min-h-screen bg-background text-foreground">
+      <div aria-hidden className="pointer-events-none absolute inset-0 helios-grid-bg opacity-60" />
 
-      <header className="relative z-10 mx-auto flex max-w-5xl items-center justify-between px-6 py-6">
-        <Link href="/" className="flex items-center gap-2">
-          <div
-            className="h-7 w-7 rounded-md bg-gradient-to-br from-pink-400 via-rose-500 to-fuchsia-600 shadow-lg shadow-pink-500/30"
+      <header className="relative z-20 mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
+        <Link href="/" className="flex items-center gap-2.5">
+          <span
             aria-hidden
-          />
-          <span className="text-base font-semibold tracking-tight">Helios</span>
+            className="relative inline-block h-7 w-7 rounded-lg"
+            style={{
+              background: "linear-gradient(135deg, var(--watermelon) 0%, var(--punch) 100%)",
+              boxShadow: "0 6px 20px -6px color-mix(in oklch, var(--watermelon) 60%, transparent)",
+            }}
+          >
+            <span aria-hidden className="absolute inset-[2px] rounded-md border border-white/20" />
+          </span>
+          <span className="font-display text-base font-semibold tracking-tight">Helios</span>
+          <span className="ml-1 rounded-md border border-border bg-background/60 px-1.5 py-0.5 font-mono text-[9px] font-medium tracking-wider text-muted-foreground uppercase backdrop-blur">
+            Alpha
+          </span>
         </Link>
-        <Button variant="ghost" size="sm" asChild>
+        <Button variant="ghost" size="sm" asChild className="text-muted-foreground">
           <Link href="/">
             <ArrowLeft className="mr-1 h-3.5 w-3.5" aria-hidden /> Back home
           </Link>
@@ -175,32 +168,41 @@ export default function OnboardPage() {
         {state.status === "loading" && (
           <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-            <p className="text-sm">Checking for an existing wallet on this device</p>
+            <p className="font-mono text-xs tracking-wider uppercase">
+              Checking for an existing wallet
+            </p>
           </div>
         )}
 
         {state.status === "welcome" && (
           <form
             onSubmit={handleEnroll}
-            className="flex w-full flex-col items-center gap-6 rounded-2xl border border-border bg-card p-8 shadow-xl shadow-pink-500/5"
+            className="flex w-full flex-col items-center gap-6 overflow-hidden rounded-3xl border border-border bg-card p-8 shadow-[0_20px_60px_-20px_color-mix(in_oklch,var(--watermelon)_20%,transparent)]"
           >
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-pink-500/15 via-rose-500/10 to-fuchsia-500/10">
-              <Fingerprint className="h-7 w-7 text-pink-500" aria-hidden />
+            <div
+              className="flex h-14 w-14 items-center justify-center rounded-2xl"
+              style={{
+                background:
+                  "linear-gradient(135deg, color-mix(in oklch, var(--watermelon) 22%, transparent), color-mix(in oklch, var(--mint) 10%, transparent))",
+                border: "1px solid color-mix(in oklch, var(--watermelon) 25%, transparent)",
+              }}
+            >
+              <Fingerprint className="h-7 w-7 text-watermelon" aria-hidden />
             </div>
             <div className="flex flex-col items-center gap-2 text-center">
-              <h1 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
+              <h1 className="font-display text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
                 Create your Helios wallet
               </h1>
               <p className="max-w-md text-balance text-sm text-muted-foreground">
-                A passkey is your wallet. No seed phrase. No recovery sheet. Face ID, Touch ID, or a
-                hardware key, right on this device.
+                A passkey is your wallet. No seed phrase. No recovery sheet. Face ID, Touch ID, a
+                security key, or your phone acting as one.
               </p>
             </div>
 
             {!webAuthnSupported && (
               <div
                 role="alert"
-                className="flex w-full items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive"
+                className="flex w-full items-start gap-3 rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive"
               >
                 <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 <p>
@@ -211,8 +213,11 @@ export default function OnboardPage() {
             )}
 
             <div className="flex w-full flex-col gap-2">
-              <label htmlFor="wallet-name" className="text-xs font-medium text-muted-foreground">
-                Wallet name (optional)
+              <label
+                htmlFor="wallet-name"
+                className="font-mono text-[11px] font-medium tracking-wider text-muted-foreground uppercase"
+              >
+                Wallet name <span className="text-muted-foreground/60">optional</span>
               </label>
               <Input
                 id="wallet-name"
@@ -225,7 +230,7 @@ export default function OnboardPage() {
                 className="h-10"
               />
               <p className="text-xs text-muted-foreground">
-                Shown in your device's passkey prompt. You can leave this blank.
+                Shown in your device's passkey prompt.
               </p>
             </div>
 
@@ -233,7 +238,7 @@ export default function OnboardPage() {
               type="submit"
               size="lg"
               disabled={!webAuthnSupported}
-              className="w-full bg-gradient-to-br from-pink-500 via-rose-500 to-fuchsia-600 text-white shadow-lg shadow-pink-500/30 hover:from-pink-500 hover:via-rose-600 hover:to-fuchsia-700"
+              className="h-11 w-full border-0 bg-watermelon text-sm font-semibold text-watermelon-foreground shadow-[0_8px_24px_-8px_color-mix(in_oklch,var(--watermelon)_60%,transparent)] transition-transform hover:bg-punch hover:translate-y-[-1px]"
             >
               <Fingerprint className="mr-2 h-4 w-4" aria-hidden />
               Create with passkey
@@ -242,33 +247,42 @@ export default function OnboardPage() {
         )}
 
         {state.status === "enrolling" && (
-          <div className="flex w-full flex-col items-center gap-6 rounded-2xl border border-border bg-card p-10 shadow-xl shadow-pink-500/5">
+          <div className="flex w-full flex-col items-center gap-6 rounded-3xl border border-border bg-card p-10 shadow-[0_20px_60px_-20px_color-mix(in_oklch,var(--watermelon)_20%,transparent)]">
             <div className="relative flex h-20 w-20 items-center justify-center">
               <div
                 aria-hidden
-                className="absolute inset-0 animate-ping rounded-full bg-pink-500/20"
+                className="absolute inset-0 animate-ping rounded-full bg-watermelon/20"
               />
-              <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 via-rose-500 to-fuchsia-600 shadow-lg shadow-pink-500/40">
+              <div
+                className="relative flex h-16 w-16 items-center justify-center rounded-full shadow-[0_14px_36px_-10px_color-mix(in_oklch,var(--punch)_60%,transparent)]"
+                style={{
+                  background: "linear-gradient(135deg, var(--watermelon), var(--punch))",
+                }}
+              >
                 <Fingerprint className="h-7 w-7 text-white" aria-hidden />
               </div>
             </div>
             <div className="flex flex-col items-center gap-2 text-center">
-              <h2 className="text-xl font-semibold tracking-tight">Follow your browser prompt</h2>
+              <h2 className="font-display text-xl font-semibold tracking-tight">
+                Follow your browser prompt
+              </h2>
               <p className="max-w-sm text-balance text-sm text-muted-foreground">
-                Confirm the passkey with Face ID, Touch ID, or a security key. It stays on this
-                device.
+                Confirm the passkey with Face ID, Touch ID, or a security key. The private key stays
+                on this device.
               </p>
             </div>
           </div>
         )}
 
         {state.status === "error" && (
-          <div className="flex w-full flex-col items-center gap-6 rounded-2xl border border-destructive/30 bg-card p-8 shadow-xl shadow-destructive/5">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
+          <div className="flex w-full flex-col items-center gap-6 rounded-3xl border border-destructive/30 bg-card p-8">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
               <ShieldAlert className="h-7 w-7 text-destructive" aria-hidden />
             </div>
             <div className="flex flex-col items-center gap-2 text-center">
-              <h2 className="text-xl font-semibold tracking-tight">Something stopped the setup</h2>
+              <h2 className="font-display text-xl font-semibold tracking-tight">
+                Something stopped the setup
+              </h2>
               <p className="max-w-md text-balance text-sm text-muted-foreground" role="alert">
                 {state.message}
               </p>
@@ -277,7 +291,7 @@ export default function OnboardPage() {
               <Button
                 size="lg"
                 onClick={() => handleEnroll()}
-                className="bg-gradient-to-br from-pink-500 via-rose-500 to-fuchsia-600 text-white shadow-lg shadow-pink-500/30 hover:from-pink-500 hover:via-rose-600 hover:to-fuchsia-700"
+                className="h-11 border-0 bg-watermelon text-sm font-semibold text-watermelon-foreground shadow-[0_8px_24px_-8px_color-mix(in_oklch,var(--watermelon)_60%,transparent)] hover:bg-punch"
               >
                 Try again
               </Button>
@@ -289,24 +303,34 @@ export default function OnboardPage() {
         )}
 
         {state.status === "complete" && (
-          <div className="flex w-full flex-col items-center gap-6 rounded-2xl border border-border bg-card p-8 shadow-xl shadow-pink-500/5 animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 via-rose-500 to-fuchsia-600 shadow-lg shadow-pink-500/40">
-              <Check className="h-7 w-7 text-white" aria-hidden />
+          <div className="flex w-full flex-col items-center gap-6 overflow-hidden rounded-3xl border border-border bg-card p-8 shadow-[0_20px_60px_-20px_color-mix(in_oklch,var(--mint)_18%,transparent)] animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
+            <div
+              className="flex h-14 w-14 items-center justify-center rounded-full shadow-[0_14px_36px_-10px_color-mix(in_oklch,var(--mint)_60%,transparent)]"
+              style={{
+                background:
+                  "linear-gradient(135deg, color-mix(in oklch, var(--mint) 95%, white 5%), color-mix(in oklch, var(--mint) 70%, black 10%))",
+              }}
+            >
+              <Check className="h-7 w-7 text-mint-foreground" aria-hidden />
             </div>
             <div className="flex flex-col items-center gap-2 text-center">
-              <h2 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
+              <div className="inline-flex items-center gap-2 text-[11px] font-medium tracking-wider text-mint uppercase">
+                <span className="h-px w-5 bg-mint" aria-hidden />
                 Wallet ready
+              </div>
+              <h2 className="font-display text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
+                Your smart account is set
               </h2>
               <p className="max-w-md text-balance text-sm text-muted-foreground">
-                Your passkey is stored on this device. Below is the smart-account address Helios
-                will deploy for you on first use.
+                Your passkey is stored on this device. The address below is the deterministic
+                Soroban smart-account that Helios will deploy on first transaction.
               </p>
             </div>
 
             <div className="flex w-full flex-col gap-3">
-              <div className="flex flex-col gap-1 rounded-lg border border-border bg-muted/40 p-4">
-                <span className="text-xs font-medium text-muted-foreground">
-                  Smart-account address (Soroban testnet)
+              <div className="flex flex-col gap-1 rounded-xl border border-border bg-muted/40 p-4">
+                <span className="font-mono text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+                  Smart-account address
                 </span>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 break-all font-mono text-xs sm:text-sm">
@@ -315,8 +339,10 @@ export default function OnboardPage() {
                   <CopyButton value={state.accountAddress} label="account address" />
                 </div>
               </div>
-              <div className="flex flex-col gap-1 rounded-lg border border-border bg-muted/40 p-4">
-                <span className="text-xs font-medium text-muted-foreground">Public key</span>
+              <div className="flex flex-col gap-1 rounded-xl border border-border bg-muted/40 p-4">
+                <span className="font-mono text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+                  Public key
+                </span>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 font-mono text-xs sm:text-sm">
                     {truncatePublicKey(state.credential.publicKey, 10)}
@@ -330,18 +356,14 @@ export default function OnboardPage() {
               <Button
                 size="lg"
                 asChild
-                className="flex-1 bg-gradient-to-br from-pink-500 via-rose-500 to-fuchsia-600 text-white shadow-lg shadow-pink-500/30 hover:from-pink-500 hover:via-rose-600 hover:to-fuchsia-700"
+                className="h-11 flex-1 border-0 bg-watermelon text-sm font-semibold text-watermelon-foreground shadow-[0_8px_24px_-8px_color-mix(in_oklch,var(--watermelon)_60%,transparent)] transition-transform hover:bg-punch hover:translate-y-[-1px]"
               >
                 <Link href="/app/dashboard">Open wallet</Link>
               </Button>
-              <Button variant="outline" size="lg" asChild className="flex-1">
+              <Button variant="outline" size="lg" asChild className="h-11 flex-1">
                 <Link href="/">Back home</Link>
               </Button>
             </div>
-
-            <p className="text-balance text-center text-xs text-muted-foreground">
-              Deployment to Soroban testnet happens on first transaction. Account is non-custodial.
-            </p>
           </div>
         )}
       </main>
