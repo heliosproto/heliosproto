@@ -1,12 +1,27 @@
 "use client";
 
-import { ArrowRight, Github } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { type CSSProperties, type PointerEvent, useCallback, useState } from "react";
 import { PasskeyCard } from "@/components/landing/passkey-card";
 import { Button } from "@/components/ui/button";
 
 const GITHUB_URL = "https://github.com/heliosproto/heliosproto";
+
+function GithubGlyph({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      role="img"
+      aria-labelledby="helios-github-icon"
+      className={className}
+    >
+      <title id="helios-github-icon">GitHub</title>
+      <path d="M12 .5C5.73.5.74 5.53.74 11.8c0 5.02 3.26 9.28 7.78 10.78.57.1.78-.25.78-.55v-1.92c-3.17.69-3.84-1.5-3.84-1.5-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.02 1.76 2.69 1.25 3.35.95.1-.74.4-1.25.72-1.54-2.53-.29-5.19-1.27-5.19-5.63 0-1.24.44-2.26 1.17-3.05-.12-.3-.51-1.46.11-3.05 0 0 .95-.3 3.11 1.16a10.7 10.7 0 0 1 5.65 0c2.16-1.46 3.11-1.16 3.11-1.16.62 1.59.23 2.75.11 3.05.73.79 1.17 1.81 1.17 3.05 0 4.37-2.66 5.33-5.2 5.62.41.35.78 1.03.78 2.09v3.1c0 .3.21.66.78.55 4.52-1.5 7.78-5.76 7.78-10.78C23.26 5.53 18.27.5 12 .5z" />
+    </svg>
+  );
+}
 
 type MouseState = { x: number; y: number } | null;
 
@@ -95,7 +110,7 @@ export function Hero() {
               className="h-11 border-border px-5 text-sm font-medium"
             >
               <a href={GITHUB_URL} target="_blank" rel="noreferrer">
-                <Github className="mr-1 h-4 w-4" aria-hidden />
+                <GithubGlyph className="mr-1 h-4 w-4" />
                 View source
               </a>
             </Button>
