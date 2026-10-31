@@ -3,6 +3,7 @@
 import { ArrowLeft, Check, Copy, Fingerprint, Loader2, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { loadCredential, type StoredCredential, storeCredential } from "@/lib/credential-store";
@@ -140,28 +141,37 @@ export default function OnboardPage() {
     <div className="relative min-h-screen bg-background text-foreground">
       <div aria-hidden className="pointer-events-none absolute inset-0 helios-grid-bg opacity-60" />
 
-      <header className="relative z-20 mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
-        <Link href="/" className="flex items-center gap-2.5">
-          <span
-            aria-hidden
-            className="relative inline-block h-7 w-7 rounded-lg"
-            style={{
-              background: "linear-gradient(135deg, var(--watermelon) 0%, var(--punch) 100%)",
-              boxShadow: "0 6px 20px -6px color-mix(in oklch, var(--watermelon) 60%, transparent)",
-            }}
-          >
-            <span aria-hidden className="absolute inset-[2px] rounded-md border border-white/20" />
-          </span>
-          <span className="font-display text-base font-semibold tracking-tight">Helios</span>
-          <span className="ml-1 rounded-md border border-border bg-background/60 px-1.5 py-0.5 font-mono text-[9px] font-medium tracking-wider text-muted-foreground uppercase backdrop-blur">
-            Alpha
-          </span>
-        </Link>
-        <Button variant="ghost" size="sm" asChild className="text-muted-foreground">
-          <Link href="/">
-            <ArrowLeft className="mr-1 h-3.5 w-3.5" aria-hidden /> Back home
+      <header className="sticky top-0 z-50 border-b border-transparent bg-background/70 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-6 py-4">
+          <Link href="/" className="flex items-center gap-2.5">
+            <span
+              aria-hidden
+              className="relative inline-block h-7 w-7 rounded-lg"
+              style={{
+                background: "linear-gradient(135deg, var(--watermelon) 0%, var(--punch) 100%)",
+                boxShadow:
+                  "0 6px 20px -6px color-mix(in oklch, var(--watermelon) 60%, transparent)",
+              }}
+            >
+              <span
+                aria-hidden
+                className="absolute inset-[2px] rounded-md border border-white/20"
+              />
+            </span>
+            <span className="font-display text-base font-semibold tracking-tight">Helios</span>
+            <span className="ml-1 rounded-md border border-border bg-background/60 px-1.5 py-0.5 font-mono text-[9px] font-medium tracking-wider text-muted-foreground uppercase backdrop-blur">
+              Alpha
+            </span>
           </Link>
-        </Button>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <ThemeToggle />
+            <Button variant="ghost" size="sm" asChild className="text-muted-foreground">
+              <Link href="/">
+                <ArrowLeft className="mr-1 h-3.5 w-3.5" aria-hidden /> Back home
+              </Link>
+            </Button>
+          </div>
+        </div>
       </header>
 
       <main className="relative z-10 mx-auto flex max-w-xl flex-col items-center px-6 pt-8 pb-20">

@@ -1,20 +1,12 @@
+import type { Ref } from "react";
 import { cn } from "@/lib/utils";
 
 type PasskeyCardProps = {
   className?: string;
-  tilt?: { x: number; y: number };
+  tiltRef?: Ref<HTMLDivElement>;
 };
 
-/**
- * Bespoke mock passkey card for the hero. Credit-card-shape with watermelon
- * -to-punch gradient and a mint EMV-style chip. Tilt is driven from the hero
- * via mouse position so this stays a pure presentational component.
- */
-export function PasskeyCard({ className, tilt }: PasskeyCardProps) {
-  const transform = tilt
-    ? `rotateX(${tilt.y}deg) rotateY(${tilt.x}deg) translateZ(0)`
-    : "rotateY(-8deg) rotateX(6deg)";
-
+export function PasskeyCard({ className, tiltRef }: PasskeyCardProps) {
   return (
     <div
       className={cn("[perspective:1200px]", className)}
@@ -22,9 +14,10 @@ export function PasskeyCard({ className, tilt }: PasskeyCardProps) {
       aria-hidden
     >
       <div
-        className="relative aspect-[1.586/1] w-full max-w-sm rounded-3xl p-6 shadow-2xl transition-transform duration-200 ease-out helios-float"
+        ref={tiltRef}
+        className="relative aspect-[1.586/1] w-full max-w-sm rounded-3xl p-6 shadow-2xl transition-transform duration-200 ease-out will-change-transform helios-float"
         style={{
-          transform,
+          transform: "rotateY(-8deg) rotateX(6deg)",
           transformStyle: "preserve-3d",
           background:
             "linear-gradient(135deg, var(--watermelon) 0%, var(--punch) 55%, #c4356a 100%)",

@@ -1,9 +1,25 @@
 import { ArrowRight, Fingerprint, Gauge, Key, Puzzle, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { Hero } from "@/components/landing/hero";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 
 const GITHUB_URL = "https://github.com/heliosproto/heliosproto";
+
+function GithubGlyph({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      role="img"
+      aria-labelledby="helios-github-icon-site"
+      className={className}
+    >
+      <title id="helios-github-icon-site">GitHub</title>
+      <path d="M12 .5C5.73.5.74 5.53.74 11.8c0 5.02 3.26 9.28 7.78 10.78.57.1.78-.25.78-.55v-1.92c-3.17.69-3.84-1.5-3.84-1.5-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.02 1.76 2.69 1.25 3.35.95.1-.74.4-1.25.72-1.54-2.53-.29-5.19-1.27-5.19-5.63 0-1.24.44-2.26 1.17-3.05-.12-.3-.51-1.46.11-3.05 0 0 .95-.3 3.11 1.16a10.7 10.7 0 0 1 5.65 0c2.16-1.46 3.11-1.16 3.11-1.16.62 1.59.23 2.75.11 3.05.73.79 1.17 1.81 1.17 3.05 0 4.37-2.66 5.33-5.2 5.62.41.35.78 1.03.78 2.09v3.1c0 .3.21.66.78.55 4.52-1.5 7.78-5.76 7.78-10.78C23.26 5.53 18.27.5 12 .5z" />
+    </svg>
+  );
+}
 
 export default function Landing() {
   return (
@@ -20,47 +36,58 @@ export default function Landing() {
 
 function SiteHeader() {
   return (
-    <header className="relative z-20 mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-      <Link href="/" className="flex items-center gap-2.5">
-        <span
-          aria-hidden
-          className="relative inline-block h-7 w-7 rounded-lg"
-          style={{
-            background: "linear-gradient(135deg, var(--watermelon) 0%, var(--punch) 100%)",
-            boxShadow: "0 6px 20px -6px color-mix(in oklch, var(--watermelon) 60%, transparent)",
-          }}
-        >
-          <span aria-hidden className="absolute inset-[2px] rounded-md border border-white/20" />
-        </span>
-        <span className="font-display text-base font-semibold tracking-tight">Helios</span>
-        <span className="ml-1 rounded-md border border-border bg-background/60 px-1.5 py-0.5 font-mono text-[9px] font-medium tracking-wider text-muted-foreground uppercase backdrop-blur">
-          Alpha
-        </span>
-      </Link>
-      <nav className="hidden items-center gap-7 text-sm text-muted-foreground sm:flex">
-        <Link href="#features" className="transition hover:text-foreground">
-          Features
+    <header className="sticky top-0 z-50 border-b border-transparent bg-background/70 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-6 py-4">
+        <Link href="/" className="flex items-center gap-2.5">
+          <span
+            aria-hidden
+            className="relative inline-block h-7 w-7 rounded-lg"
+            style={{
+              background: "linear-gradient(135deg, var(--watermelon) 0%, var(--punch) 100%)",
+              boxShadow: "0 6px 20px -6px color-mix(in oklch, var(--watermelon) 60%, transparent)",
+            }}
+          >
+            <span aria-hidden className="absolute inset-[2px] rounded-md border border-white/20" />
+          </span>
+          <span className="font-display text-base font-semibold tracking-tight">Helios</span>
+          <span className="ml-1 rounded-md border border-border bg-background/60 px-1.5 py-0.5 font-mono text-[9px] font-medium tracking-wider text-muted-foreground uppercase backdrop-blur">
+            Alpha
+          </span>
         </Link>
-        <Link href="#how-it-works" className="transition hover:text-foreground">
-          How it works
-        </Link>
-        <a
-          href="https://github.com/heliosproto/heliosproto/blob/main/ROADMAP.md"
-          className="transition hover:text-foreground"
-        >
-          Roadmap
-        </a>
-        <a href={GITHUB_URL} className="transition hover:text-foreground">
-          GitHub
-        </a>
-      </nav>
-      <Button
-        asChild
-        size="sm"
-        className="h-8 border-0 bg-watermelon text-xs font-semibold text-watermelon-foreground hover:bg-punch"
-      >
-        <Link href="/app">Launch</Link>
-      </Button>
+        <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
+          <Link href="#features" className="transition hover:text-foreground">
+            Features
+          </Link>
+          <Link href="#how-it-works" className="transition hover:text-foreground">
+            How it works
+          </Link>
+          <a
+            href="https://github.com/heliosproto/heliosproto/blob/main/ROADMAP.md"
+            className="transition hover:text-foreground"
+          >
+            Roadmap
+          </a>
+        </nav>
+        <div className="flex items-center gap-1 sm:gap-2">
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="GitHub repository"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition hover:text-foreground"
+          >
+            <GithubGlyph className="h-4 w-4" />
+          </a>
+          <ThemeToggle />
+          <Button
+            asChild
+            size="sm"
+            className="h-8 border-0 bg-watermelon text-xs font-semibold text-watermelon-foreground hover:bg-punch"
+          >
+            <Link href="/app">Launch</Link>
+          </Button>
+        </div>
+      </div>
     </header>
   );
 }
