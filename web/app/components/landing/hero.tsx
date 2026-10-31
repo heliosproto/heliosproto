@@ -2,7 +2,7 @@
 
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { type CSSProperties, type PointerEvent, useCallback, useState } from "react";
+import { type PointerEvent, useCallback, useEffect, useRef } from "react";
 import { PasskeyCard } from "@/components/landing/passkey-card";
 import { Button } from "@/components/ui/button";
 
@@ -23,28 +23,66 @@ function GithubGlyph({ className }: { className?: string }) {
   );
 }
 
-type MouseState = { x: number; y: number } | null;
+const DEFAULT_TILT = "rotateY(-8deg) rotateX(6deg)";
 
 export function Hero() {
-  const [mouse, setMouse] = useState<MouseState>(null);
+  const glowRef = useRef<HTMLDivElement | null>(null);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const frameRef = useRef<number | null>(null);
+  const latestRef = useRef<{ x: number; y: number } | null>(null);
 
-  const handlePointerMove = useCallback((event: PointerEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 100;
-    const y = ((event.clientY - rect.top) / rect.height) * 100;
-    setMouse({ x, y });
+  const flush = useCallback(() => {
+    frameRef.current = null;
+    const next = latestRef.current;
+    const glow = glowRef.current;
+    const card = cardRef.current;
+
+    if (!next) {
+      if (glow) {
+        glow.style.setProperty("--helios-mouse-x", "50%");
+        glow.style.setProperty("--helios-mouse-y", "28%");
+      }
+      if (card) card.style.transform = DEFAULT_TILT;
+      return;
+    }
+
+    if (glow) {
+      glow.style.setProperty("--helios-mouse-x", `${next.x}%`);
+      glow.style.setProperty("--helios-mouse-y", `${next.y}%`);
+    }
+    if (card) {
+      const tx = (next.x - 50) / 10;
+      const ty = -(next.y - 50) / 14;
+      card.style.transform = `rotateX(${ty}deg) rotateY(${tx}deg) translateZ(0)`;
+    }
   }, []);
+
+  const schedule = useCallback(() => {
+    if (frameRef.current !== null) return;
+    frameRef.current = requestAnimationFrame(flush);
+  }, [flush]);
+
+  const handlePointerMove = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+      latestRef.current = { x, y };
+      schedule();
+    },
+    [schedule],
+  );
 
   const handlePointerLeave = useCallback(() => {
-    setMouse(null);
+    latestRef.current = null;
+    schedule();
+  }, [schedule]);
+
+  useEffect(() => {
+    return () => {
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    };
   }, []);
-
-  const glowStyle: CSSProperties = {
-    "--helios-mouse-x": mouse ? `${mouse.x}%` : "50%",
-    "--helios-mouse-y": mouse ? `${mouse.y}%` : "28%",
-  } as CSSProperties;
-
-  const tilt = mouse ? { x: (mouse.x - 50) / 10, y: -(mouse.y - 50) / 14 } : undefined;
 
   return (
     <section
@@ -54,23 +92,29 @@ export function Hero() {
     >
       <div aria-hidden className="pointer-events-none absolute inset-0 helios-grid-bg" />
       <div
+        ref={glowRef}
         aria-hidden
         className="pointer-events-none absolute inset-0 helios-hero-glow"
-        style={glowStyle}
+        style={
+          {
+            "--helios-mouse-x": "50%",
+            "--helios-mouse-y": "28%",
+          } as React.CSSProperties
+        }
       />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-background"
       />
 
-      <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 items-center gap-16 px-6 pt-16 pb-24 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10 lg:pt-24">
-        <div className="flex flex-col items-start gap-7">
+      <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-6 pt-10 pb-20 sm:gap-14 sm:pt-16 sm:pb-24 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10 lg:pt-24">
+        <div className="flex flex-col items-start gap-6 sm:gap-7">
           <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/40 px-3 py-1.5 text-[11px] font-medium tracking-wider text-muted-foreground uppercase backdrop-blur">
             <span className="h-1.5 w-1.5 rounded-full bg-mint helios-pulse-dot" aria-hidden />
             Testnet alpha, Soroban
           </div>
 
-          <h1 className="font-display text-5xl font-semibold leading-[1.02] tracking-tight text-foreground sm:text-6xl lg:text-[64px]">
+          <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-5xl sm:leading-[1.02] lg:text-[64px]">
             Your smart account,{" "}
             <span className="relative inline-block whitespace-nowrap text-watermelon">
               finally
@@ -86,7 +130,7 @@ export function Hero() {
             the wallet.
           </h1>
 
-          <p className="max-w-xl text-pretty text-lg leading-relaxed text-muted-foreground">
+          <p className="max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
             Helios makes your Soroban smart account the primary identity, not a bolt-on. Sign in
             with a passkey. Set spending limits that enforce on-chain. Recover without a seed
             phrase.
@@ -116,7 +160,7 @@ export function Hero() {
             </Button>
           </div>
 
-          <dl className="grid grid-cols-3 gap-6 pt-4">
+          <dl className="grid w-full grid-cols-1 gap-5 pt-2 sm:grid-cols-3 sm:gap-6 sm:pt-4">
             <div className="flex flex-col gap-1">
               <dt className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
                 Signer type
@@ -148,7 +192,7 @@ export function Hero() {
               filter: "blur(32px)",
             }}
           />
-          <PasskeyCard className="relative z-10 w-full max-w-[380px]" tilt={tilt} />
+          <PasskeyCard className="relative z-10 w-full max-w-[380px]" tiltRef={cardRef} />
         </div>
       </div>
     </section>
