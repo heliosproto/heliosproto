@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "smart-account",
+    "factory",
     "plugins/session-keys",
     "plugins/allowlist",
     "plugins/spending-limits",
