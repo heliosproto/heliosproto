@@ -50,4 +50,8 @@ jobs:
         run: cargo test --all
 
       - name: Build wasm
-        run: cargo build --target wasm32-unknown-unknown --release
+        run: |
+          cargo build --target wasm32-unknown-unknown --release \
+            -p heliosproto-smart-account \
+            -p heliosproto-factory \
+            -p heliosproto-session-keys
