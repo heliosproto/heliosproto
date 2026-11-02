@@ -1,0 +1,11 @@
+{
+  "network": "testnet",
+  "deployer": "GBWUF6VB7ZLK5EZI46SSPNNVWOM4X3X64KQYN6BCVILFD3AQMAIETKMC",
+  "smart_account_wasm_hash": "384450f525bbe877cbf3c41b0b1340ddb617d4d04a104c1ba8118d015e4cf0b6",
+  "factory_wasm_hash": "264d28a834c0198a38feca924413a8a3b3621d1fcf3f42fe7fdf5fdfa272eafa",
+  "factory_contract_id": "CD5QVHYLGH3KYO6QHFSU4BRQ524VJJMDD7BGU7F4NO2U4BNJGWYWQVGH",
+  "verification": {
+    "credential_id_hex": "68656c696f73707261746f2d64617931",
+    "deployed_account": "CB3RGBH4SDH22ECLPLJUB3YMHX6RZWGJN3VSOBUFJ5XQRQVUBMF7DF4M"
+  }
+}
