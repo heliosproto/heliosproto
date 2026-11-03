@@ -1,25 +1,38 @@
 "use client";
 
-import { ArrowLeft, Check, Copy, Fingerprint, Loader2, ShieldAlert } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Copy,
+  ExternalLink,
+  Fingerprint,
+  Loader2,
+  ShieldAlert,
+} from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { loadCredential, type StoredCredential, storeCredential } from "@/lib/credential-store";
+import { deployAccountOnTestnet, mockPubkeyFromCredential } from "@/lib/factory-client";
 import { createPasskey, type PasskeyCredential, truncatePublicKey } from "@/lib/passkey";
-import { predictAccountAddress } from "@/lib/predict-address";
+
+type DeployedInfo = {
+  address: string;
+  txHash: string;
+  explorerUrl: string;
+};
 
 type OnboardingState =
   | { status: "loading" }
   | { status: "welcome" }
   | { status: "enrolling" }
   | { status: "error"; message: string }
-  | {
-      status: "complete";
-      credential: PasskeyCredential;
-      accountAddress: string;
-    };
+  | { status: "enrolled"; credential: PasskeyCredential }
+  | { status: "deploying"; credential: PasskeyCredential }
+  | { status: "deployed"; credential: PasskeyCredential; deployment: DeployedInfo }
+  | { status: "deploy_error"; credential: PasskeyCredential; message: string };
 
 function base64ToBytes(base64: string): Uint8Array {
   const binary = atob(base64);
@@ -86,10 +99,7 @@ export default function OnboardPage() {
 
         if (existing) {
           const passkey = storedCredentialToPasskey(existing);
-          const accountAddress = await predictAccountAddress(passkey.credentialId);
-          if (cancelled) return;
-
-          setState({ status: "complete", credential: passkey, accountAddress });
+          setState({ status: "enrolled", credential: passkey });
         } else {
           setState({ status: "welcome" });
         }
@@ -115,8 +125,7 @@ export default function OnboardPage() {
         const credentialIdBytes = base64ToBytes(passkey.credentialId);
         const publicKeyBytes = base64ToBytes(passkey.publicKey);
         await storeCredential(credentialIdBytes, publicKeyBytes);
-        const accountAddress = await predictAccountAddress(passkey.credentialId);
-        setState({ status: "complete", credential: passkey, accountAddress });
+        setState({ status: "enrolled", credential: passkey });
       } catch (err) {
         if (err instanceof DOMException && err.name === "NotAllowedError") {
           setState({
@@ -136,6 +145,23 @@ export default function OnboardPage() {
     },
     [walletName],
   );
+
+  const handleDeploy = useCallback(async (credential: PasskeyCredential) => {
+    setState({ status: "deploying", credential });
+
+    try {
+      const pubkey = await mockPubkeyFromCredential(credential.credentialId);
+      const deployment = await deployAccountOnTestnet(credential.credentialId, pubkey);
+      setState({ status: "deployed", credential, deployment });
+    } catch (err) {
+      setState({
+        status: "deploy_error",
+        credential,
+        message:
+          err instanceof Error ? err.message : "An unexpected error occurred during deployment.",
+      });
+    }
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
@@ -312,7 +338,7 @@ export default function OnboardPage() {
           </div>
         )}
 
-        {state.status === "complete" && (
+        {state.status === "enrolled" && (
           <div className="flex w-full flex-col items-center gap-6 overflow-hidden rounded-3xl border border-border bg-card p-8 shadow-[0_20px_60px_-20px_color-mix(in_oklch,var(--mint)_18%,transparent)] animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
             <div
               className="flex h-14 w-14 items-center justify-center rounded-full shadow-[0_14px_36px_-10px_color-mix(in_oklch,var(--mint)_60%,transparent)]"
@@ -326,14 +352,89 @@ export default function OnboardPage() {
             <div className="flex flex-col items-center gap-2 text-center">
               <div className="inline-flex items-center gap-2 text-[11px] font-medium tracking-wider text-mint uppercase">
                 <span className="h-px w-5 bg-mint" aria-hidden />
-                Wallet ready
+                Passkey enrolled
               </div>
               <h2 className="font-display text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
-                Your smart account is set
+                Deploy on Soroban testnet
               </h2>
               <p className="max-w-md text-balance text-sm text-muted-foreground">
-                Your passkey is stored on this device. The address below is the deterministic
-                Soroban smart-account that Helios will deploy on first transaction.
+                Your passkey is stored on this device. Deploy a smart-account on testnet so this
+                passkey controls a real on-chain contract.
+              </p>
+            </div>
+
+            <div className="flex w-full flex-col gap-1 rounded-xl border border-border bg-muted/40 p-4">
+              <span className="font-mono text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+                Passkey public key
+              </span>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 font-mono text-xs sm:text-sm">
+                  {truncatePublicKey(state.credential.publicKey, 10)}
+                </code>
+                <CopyButton value={state.credential.publicKey} label="public key" />
+              </div>
+            </div>
+
+            <Button
+              size="lg"
+              onClick={() => handleDeploy(state.credential)}
+              className="h-11 w-full border-0 bg-watermelon text-sm font-semibold text-watermelon-foreground shadow-[0_8px_24px_-8px_color-mix(in_oklch,var(--watermelon)_60%,transparent)] transition-transform hover:bg-punch hover:translate-y-[-1px]"
+            >
+              Deploy on testnet
+            </Button>
+          </div>
+        )}
+
+        {state.status === "deploying" && (
+          <div className="flex w-full flex-col items-center gap-6 rounded-3xl border border-border bg-card p-10 shadow-[0_20px_60px_-20px_color-mix(in_oklch,var(--watermelon)_20%,transparent)]">
+            <div className="relative flex h-20 w-20 items-center justify-center">
+              <div
+                aria-hidden
+                className="absolute inset-0 animate-ping rounded-full bg-watermelon/20"
+              />
+              <div
+                className="relative flex h-16 w-16 items-center justify-center rounded-full shadow-[0_14px_36px_-10px_color-mix(in_oklch,var(--punch)_60%,transparent)]"
+                style={{
+                  background: "linear-gradient(135deg, var(--watermelon), var(--punch))",
+                }}
+              >
+                <Loader2 className="h-7 w-7 animate-spin text-white" aria-hidden />
+              </div>
+            </div>
+            <div className="flex flex-col items-center gap-2 text-center">
+              <h2 className="font-display text-xl font-semibold tracking-tight">
+                Deploying to Soroban testnet
+              </h2>
+              <p className="max-w-sm text-balance text-sm text-muted-foreground">
+                Funding an ephemeral payer, simulating the transaction, and submitting it to the
+                network. This usually takes 15 to 30 seconds.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {state.status === "deployed" && (
+          <div className="flex w-full flex-col items-center gap-6 overflow-hidden rounded-3xl border border-border bg-card p-8 shadow-[0_20px_60px_-20px_color-mix(in_oklch,var(--mint)_18%,transparent)] animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
+            <div
+              className="flex h-14 w-14 items-center justify-center rounded-full shadow-[0_14px_36px_-10px_color-mix(in_oklch,var(--mint)_60%,transparent)]"
+              style={{
+                background:
+                  "linear-gradient(135deg, color-mix(in oklch, var(--mint) 95%, white 5%), color-mix(in oklch, var(--mint) 70%, black 10%))",
+              }}
+            >
+              <Check className="h-7 w-7 text-mint-foreground" aria-hidden />
+            </div>
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="inline-flex items-center gap-2 text-[11px] font-medium tracking-wider text-mint uppercase">
+                <span className="h-px w-5 bg-mint" aria-hidden />
+                Deployed on testnet
+              </div>
+              <h2 className="font-display text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
+                Your smart account is live
+              </h2>
+              <p className="max-w-md text-balance text-sm text-muted-foreground">
+                A Soroban smart-account controlled by your passkey has been deployed. Open the
+                explorer to inspect it on-chain.
               </p>
             </div>
 
@@ -344,20 +445,20 @@ export default function OnboardPage() {
                 </span>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 break-all font-mono text-xs sm:text-sm">
-                    {state.accountAddress}
+                    {state.deployment.address}
                   </code>
-                  <CopyButton value={state.accountAddress} label="account address" />
+                  <CopyButton value={state.deployment.address} label="account address" />
                 </div>
               </div>
               <div className="flex flex-col gap-1 rounded-xl border border-border bg-muted/40 p-4">
                 <span className="font-mono text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
-                  Public key
+                  Transaction
                 </span>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 font-mono text-xs sm:text-sm">
-                    {truncatePublicKey(state.credential.publicKey, 10)}
+                  <code className="flex-1 break-all font-mono text-xs sm:text-sm">
+                    {state.deployment.txHash}
                   </code>
-                  <CopyButton value={state.credential.publicKey} label="public key" />
+                  <CopyButton value={state.deployment.txHash} label="transaction hash" />
                 </div>
               </div>
             </div>
@@ -368,10 +469,45 @@ export default function OnboardPage() {
                 asChild
                 className="h-11 flex-1 border-0 bg-watermelon text-sm font-semibold text-watermelon-foreground shadow-[0_8px_24px_-8px_color-mix(in_oklch,var(--watermelon)_60%,transparent)] transition-transform hover:bg-punch hover:translate-y-[-1px]"
               >
-                <Link href="/app/dashboard">Open wallet</Link>
+                <a href={state.deployment.explorerUrl} target="_blank" rel="noreferrer noopener">
+                  <ExternalLink className="mr-2 h-4 w-4" aria-hidden />
+                  View on Stellar Expert
+                </a>
               </Button>
               <Button variant="outline" size="lg" asChild className="h-11 flex-1">
-                <Link href="/">Back home</Link>
+                <Link href="/app/dashboard">Open wallet</Link>
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {state.status === "deploy_error" && (
+          <div className="flex w-full flex-col items-center gap-6 rounded-3xl border border-destructive/30 bg-card p-8">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
+              <ShieldAlert className="h-7 w-7 text-destructive" aria-hidden />
+            </div>
+            <div className="flex flex-col items-center gap-2 text-center">
+              <h2 className="font-display text-xl font-semibold tracking-tight">
+                Deployment failed
+              </h2>
+              <p className="max-w-md text-balance text-sm text-muted-foreground" role="alert">
+                {state.message}
+              </p>
+            </div>
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <Button
+                size="lg"
+                onClick={() => handleDeploy(state.credential)}
+                className="h-11 border-0 bg-watermelon text-sm font-semibold text-watermelon-foreground shadow-[0_8px_24px_-8px_color-mix(in_oklch,var(--watermelon)_60%,transparent)] hover:bg-punch"
+              >
+                Try again
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setState({ status: "enrolled", credential: state.credential })}
+              >
+                Back
               </Button>
             </div>
           </div>
