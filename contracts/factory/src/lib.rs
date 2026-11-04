@@ -9,6 +9,7 @@ use soroban_sdk::{
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum DataKey {
     SmartAccountWasmHash,
+    SessionKeysPlugin,
 }
 
 #[contracttype]
@@ -30,6 +31,7 @@ pub struct Signer {
 pub struct InitArgs {
     pub signers: Vec<Signer>,
     pub threshold: u32,
+    pub session_keys_plugin: Option<Address>,
 }
 
 #[contracterror]
@@ -38,6 +40,7 @@ pub struct InitArgs {
 pub enum FactoryError {
     AlreadyInitialized = 1,
     NotInitialized = 2,
+    PluginAlreadySet = 3,
 }
 
 #[contract]
@@ -85,14 +88,33 @@ impl Factory {
             kind: SignerKind::Secp256r1,
             key: pubkey,
         };
+        let session_keys_plugin: Option<Address> =
+            env.storage().instance().get(&DataKey::SessionKeysPlugin);
         let args = InitArgs {
             signers: vec![&env, signer],
             threshold: 1,
+            session_keys_plugin,
         };
         let init_args: Vec<Val> = vec![&env, args.into_val(&env)];
         env.invoke_contract::<()>(&deployed, &symbol_short!("init"), init_args);
 
         deployed
+    }
+
+    /// Configure the session-keys plugin address that future `deploy_account`
+    /// calls will pass to the smart-account's init. Settable once.
+    pub fn set_session_keys_plugin(env: Env, plugin_address: Address) -> Result<(), FactoryError> {
+        if env.storage().instance().has(&DataKey::SessionKeysPlugin) {
+            return Err(FactoryError::PluginAlreadySet);
+        }
+        env.storage()
+            .instance()
+            .set(&DataKey::SessionKeysPlugin, &plugin_address);
+        Ok(())
+    }
+
+    pub fn session_keys_plugin(env: Env) -> Option<Address> {
+        env.storage().instance().get(&DataKey::SessionKeysPlugin)
     }
 
     fn salt(env: &Env, credential_id: &Bytes) -> BytesN<32> {
