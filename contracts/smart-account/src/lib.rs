@@ -37,6 +37,10 @@ pub enum DataKey {
 pub struct InitArgs {
     pub signers: Vec<Signer>,
     pub threshold: u32,
+    /// If `Some`, the session-keys plugin is installed as part of init.
+    /// Equivalent to calling `install_session_keys` immediately after init
+    /// but without requiring the account to self-authorize.
+    pub session_keys_plugin: Option<Address>,
 }
 
 #[contracttype]
@@ -228,6 +232,11 @@ impl SmartAccount {
             .instance()
             .set(&DataKey::Threshold, &args.threshold);
         env.storage().instance().set(&DataKey::Nonce, &0u64);
+        if let Some(plugin) = args.session_keys_plugin {
+            env.storage()
+                .instance()
+                .set(&DataKey::SessionKeysPlugin, &plugin);
+        }
     }
 
     pub fn signers(env: Env) -> Vec<Signer> {

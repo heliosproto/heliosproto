@@ -22,7 +22,11 @@ fn ed25519_signer(env: &Env, byte: u8) -> Signer {
 fn setup_with_signers(env: &Env, signers: Vec<Signer>, threshold: u32) -> SmartAccountClient<'_> {
     let contract_id = env.register(SmartAccount, ());
     let client = SmartAccountClient::new(env, &contract_id);
-    client.init(&InitArgs { signers, threshold });
+    client.init(&InitArgs {
+        signers,
+        threshold,
+        session_keys_plugin: None,
+    });
     client
 }
 
@@ -59,6 +63,7 @@ fn init_twice_panics() {
     client.init(&InitArgs {
         signers: vec![&env, ed25519_signer(&env, 1)],
         threshold: 1,
+        session_keys_plugin: None,
     });
 }
 
@@ -200,6 +205,21 @@ fn setup_with_session_plugin(env: &Env) -> (SmartAccountClient<'_>, SessionKeysC
 
     account_client.install_session_keys(&session_keys_id);
     (account_client, session_keys_client)
+}
+
+#[test]
+fn init_with_plugin_stores_it() {
+    let env = Env::default();
+    let session_keys_id = env.register(SessionKeys, ());
+    let contract_id = env.register(SmartAccount, ());
+    let client = SmartAccountClient::new(&env, &contract_id);
+    client.init(&InitArgs {
+        signers: vec![&env, ed25519_signer(&env, 1)],
+        threshold: 1,
+        session_keys_plugin: Some(session_keys_id.clone()),
+    });
+
+    assert_eq!(client.session_keys_plugin(), Some(session_keys_id));
 }
 
 fn contract_context(env: &Env, destination: Address) -> Context {
