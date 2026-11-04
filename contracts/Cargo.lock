@@ -690,6 +690,7 @@ dependencies = [
 name = "heliosproto-smart-account"
 version = "0.1.0"
 dependencies = [
+ "heliosproto-session-keys",
  "soroban-sdk",
 ]
 
