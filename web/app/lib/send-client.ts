@@ -238,7 +238,9 @@ export async function broadcastTransferXlm(
     if (sent.status === "ERROR") {
       return {
         success: false,
-        error: sent.errorResult ? `Submit failed: ${sent.errorResult.toXDR("base64")}` : "Submit failed.",
+        error: sent.errorResult
+          ? `Submit failed: ${sent.errorResult.toXDR("base64")}`
+          : "Submit failed.",
       };
     }
 

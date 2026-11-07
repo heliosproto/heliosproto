@@ -71,7 +71,7 @@ function bytesToBase64(bytes: Uint8Array): string {
  * guarantees up to 7 decimal places and a positive number. */
 function amountToStroops(amount: string): bigint {
   const [whole, fractional = ""] = amount.split(".");
-  const paddedFraction = (fractional + "0000000").slice(0, 7);
+  const paddedFraction = `${fractional}0000000`.slice(0, 7);
   return BigInt(whole) * 10_000_000n + BigInt(paddedFraction);
 }
 
