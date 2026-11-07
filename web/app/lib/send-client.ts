@@ -6,6 +6,7 @@ import {
   Contract,
   Keypair,
   nativeToScVal,
+  Operation,
   rpc,
   TransactionBuilder,
   xdr,
@@ -164,12 +165,13 @@ async function waitForInclusion(
  * `AuthPayload { nonce, pubkeys: [primarySignerPubkey] }` ScMap matching the
  * smart-account's `__check_auth` expectation.
  *
- * The smart-account's auth logic does not verify ECDSA/Ed25519 signatures
- * over the signature_payload; it checks that each pubkey in the AuthPayload
- * is in the stored signers set, and that the embedded nonce matches the
- * account's stored nonce. The ephemeral Stellar source account only pays
- * the transaction fee and signs the outer envelope; it does not authorize
- * the `from` of the inner transfer.
+ * Two simulate passes are required because a pre-auth first pass does not
+ * actually execute `__check_auth` and therefore returns a footprint that
+ * misses the smart-account's internal reads (nonce, signers, plugin address).
+ * Submitting a transaction built from that incomplete footprint fails at
+ * execution time with "trying to access contract instance outside of the
+ * footprint". The second simulate, with the signed auth entries attached,
+ * actually runs `__check_auth` and returns a complete footprint.
  */
 export async function broadcastTransferXlm(
   input: BroadcastTransferInput,
@@ -185,35 +187,41 @@ export async function broadcastTransferXlm(
     const server = new rpc.Server(TESTNET_RPC);
     const ephemeral = Keypair.random();
     await fundEphemeral(ephemeral.publicKey());
-    const source = await server.getAccount(ephemeral.publicKey());
 
     const fromSv = new Address(input.from).toScVal();
     const toSv = new Address(input.to).toScVal();
     const amountSv = nativeToScVal(input.amountStroops, { type: "i128" });
 
-    const xlmSac = new Contract(TESTNET_XLM_SAC);
-    const op = xlmSac.call("transfer", fromSv, toSv, amountSv);
+    const hostFunction = xdr.HostFunction.hostFunctionTypeInvokeContract(
+      new xdr.InvokeContractArgs({
+        contractAddress: new Address(TESTNET_XLM_SAC).toScAddress(),
+        functionName: "transfer",
+        args: [fromSv, toSv, amountSv],
+      }),
+    );
 
-    const unsigned = new TransactionBuilder(source, {
+    // Pass 1: simulate without auth to discover the required auth entries.
+    const source1 = await server.getAccount(ephemeral.publicKey());
+    const tx1 = new TransactionBuilder(source1, {
       fee: BASE_FEE,
       networkPassphrase: TESTNET_PASSPHRASE,
     })
-      .addOperation(op)
+      .addOperation(Operation.invokeHostFunction({ func: hostFunction }))
       .setTimeout(60)
       .build();
 
-    const sim = await server.simulateTransaction(unsigned);
-    if (rpc.Api.isSimulationError(sim)) {
-      return { success: false, error: sim.error };
+    const sim1 = await server.simulateTransaction(tx1);
+    if (rpc.Api.isSimulationError(sim1)) {
+      return { success: false, error: sim1.error };
     }
-    if (!rpc.Api.isSimulationSuccess(sim)) {
-      return { success: false, error: "Simulation returned no result." };
+    if (!rpc.Api.isSimulationSuccess(sim1)) {
+      return { success: false, error: "Initial simulation returned no result." };
     }
 
     const authPayload = buildAuthPayloadScVal(input.accountNonce, input.primarySignerPubkey);
-    const expirationLedger = sim.latestLedger + 100;
+    const expirationLedger = sim1.latestLedger + 100;
 
-    const simAuth = sim.result?.auth ?? [];
+    const simAuth = sim1.result?.auth ?? [];
     const signedAuth = await Promise.all(
       simAuth.map((entry) =>
         authorizeEntry(
@@ -226,12 +234,27 @@ export async function broadcastTransferXlm(
       ),
     );
 
-    const patchedSim: rpc.Api.SimulateTransactionSuccessResponse = {
-      ...sim,
-      result: sim.result ? { ...sim.result, auth: signedAuth } : sim.result,
-    };
+    // Pass 2: simulate with signed auth attached so `__check_auth` actually
+    // runs and the returned footprint covers every ledger entry the broadcast
+    // will touch.
+    const source2 = await server.getAccount(ephemeral.publicKey());
+    const tx2 = new TransactionBuilder(source2, {
+      fee: BASE_FEE,
+      networkPassphrase: TESTNET_PASSPHRASE,
+    })
+      .addOperation(Operation.invokeHostFunction({ func: hostFunction, auth: signedAuth }))
+      .setTimeout(60)
+      .build();
 
-    const assembled = rpc.assembleTransaction(unsigned, patchedSim).build();
+    const sim2 = await server.simulateTransaction(tx2);
+    if (rpc.Api.isSimulationError(sim2)) {
+      return { success: false, error: sim2.error };
+    }
+    if (!rpc.Api.isSimulationSuccess(sim2)) {
+      return { success: false, error: "Auth-attached simulation returned no result." };
+    }
+
+    const assembled = rpc.assembleTransaction(tx2, sim2).build();
     assembled.sign(ephemeral);
 
     const sent = await server.sendTransaction(assembled);
