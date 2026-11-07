@@ -14,7 +14,12 @@ import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { loadCredential, type StoredCredential, storeCredential } from "@/lib/credential-store";
+import {
+  loadCredential,
+  type StoredCredential,
+  storeCredential,
+  storeSmartAccountAddress,
+} from "@/lib/credential-store";
 import { deployAccountOnTestnet, mockPubkeyFromCredential } from "@/lib/factory-client";
 import { createPasskey, type PasskeyCredential, truncatePublicKey } from "@/lib/passkey";
 
@@ -152,6 +157,7 @@ export default function OnboardPage() {
     try {
       const pubkey = await mockPubkeyFromCredential(credential.credentialId);
       const deployment = await deployAccountOnTestnet(credential.credentialId, pubkey);
+      await storeSmartAccountAddress(deployment.address);
       setState({ status: "deployed", credential, deployment });
     } catch (err) {
       setState({

@@ -9,6 +9,7 @@ interface StoredCredential {
   credentialId: Uint8Array;
   publicKey: Uint8Array;
   createdAt: number;
+  smartAccountAddress?: string;
 }
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
@@ -52,6 +53,16 @@ export async function loadCredential(): Promise<StoredCredential | null> {
 export async function hasCredential(): Promise<boolean> {
   const credential = await loadCredential();
   return credential !== null;
+}
+
+export async function storeSmartAccountAddress(address: string): Promise<void> {
+  const db = await getDB();
+  const existing = (await db.get(STORE_NAME, CREDENTIAL_KEY)) as StoredCredential | undefined;
+  if (!existing) {
+    throw new Error("Cannot store smart-account address before a credential exists.");
+  }
+  const updated: StoredCredential = { ...existing, smartAccountAddress: address };
+  await db.put(STORE_NAME, updated, CREDENTIAL_KEY);
 }
 
 export async function clearCredential(): Promise<void> {
