@@ -5,7 +5,7 @@ import SendPage from "@/app/app/send/page";
 import { ConfirmDialog } from "@/components/send/ConfirmDialog";
 import type { SimulationResult } from "@/components/send/types";
 
-const VALID_G = "GAGRIGZCFEYDOPSFJRJVUYLIN53H3BELSKM2BJ5OWW6MHSWR3DP6NIYZ";
+const VALID_G = "GBWUF6VB7ZLK5EZI46SSPNNVWOM4X3X64KQYN6BCVILFD3AQMAIETKMC";
 const SMART_ACCOUNT = "CDIIWUWVDGCWYIZHBOMAFXRE3UVMSMCFSGYTGNQBFU2DRQKSLWP5LHFU";
 
 vi.mock("@/lib/credential-store", () => ({
