@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { SendForm } from "@/components/send/SendForm";
 
-const VALID_G = "GAGRIGZCFEYDOPSFJRJVUYLIN53H3BELSKM2BJ5OWW6MHSWR3DP6NIYZ";
-const VALID_C = "CAGRIGZCFEYDOPSFJRJVUYLIN53H3BELSKM2BJ5OWW6MHSWR3DP6MUZM";
+const VALID_G = "GBWUF6VB7ZLK5EZI46SSPNNVWOM4X3X64KQYN6BCVILFD3AQMAIETKMC";
+const VALID_C = "CDF4P7N4QGYOH4NYSTJR4SJFE5SQXGD2LXSNBQWMI5MOS35KLCNUGU2S";
 
 function setup() {
   const onValidSubmit = vi.fn();
@@ -42,7 +42,7 @@ describe("SendForm validation", () => {
     const { onValidSubmit } = setup();
     await fillAndSubmit(user, { recipient: "not-a-valid-address", amount: "5" });
     expect(
-      await screen.findByText("Must be a valid Stellar address (G… or C…)"),
+      await screen.findByText("Must be a valid Stellar address (G... or C...)"),
     ).toBeInTheDocument();
     expect(onValidSubmit).not.toHaveBeenCalled();
   });

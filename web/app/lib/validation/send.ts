@@ -1,76 +1,30 @@
+import { StrKey } from "@stellar/stellar-sdk";
 import { z } from "zod";
 
-const STRKEY_LENGTH = 56;
-const BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-
-/** Decode a Crockford/RFC4648 base32 string (no padding) into bytes. */
-function base32Decode(input: string): Uint8Array | null {
-  let bits = 0;
-  let value = 0;
-  const output: number[] = [];
-
-  for (const char of input) {
-    const idx = BASE32_ALPHABET.indexOf(char);
-    if (idx === -1) {
-      return null;
-    }
-    value = (value << 5) | idx;
-    bits += 5;
-    if (bits >= 8) {
-      bits -= 8;
-      output.push((value >>> bits) & 0xff);
-    }
-  }
-
-  return new Uint8Array(output);
-}
-
-/** CRC16-XModem, as used by Stellar StrKey. */
-function crc16XModem(bytes: Uint8Array): number {
-  let crc = 0x0000;
-  for (const byte of bytes) {
-    let code = (crc >>> 8) & 0xff;
-    code ^= byte & 0xff;
-    code ^= code >>> 4;
-    crc = (crc << 8) & 0xffff;
-    crc ^= code;
-    code = (code << 5) & 0xffff;
-    crc ^= code;
-    code = (code << 2) & 0xffff;
-    crc ^= code;
-  }
-  return crc & 0xffff;
-}
-
+/**
+ * Validate a Stellar StrKey against one or more allowed prefixes
+ * (G for classic accounts, C for Soroban contracts). Delegates to the
+ * stellar-sdk's StrKey module, which is the authoritative implementation of
+ * the base32 + CRC16-XModem scheme used across the Stellar network.
+ */
 export function isValidStrKey(address: string, prefixes: readonly string[]): boolean {
-  if (address.length !== STRKEY_LENGTH) {
-    return false;
+  for (const prefix of prefixes) {
+    if (prefix === "G" && StrKey.isValidEd25519PublicKey(address)) {
+      return true;
+    }
+    if (prefix === "C" && StrKey.isValidContract(address)) {
+      return true;
+    }
   }
-  if (!prefixes.includes(address[0])) {
-    return false;
-  }
-
-  const decoded = base32Decode(address);
-  // 56 base32 chars -> 35 bytes: 1 version + 32 payload + 2 checksum.
-  if (decoded === null || decoded.length !== 35) {
-    return false;
-  }
-
-  const payload = decoded.subarray(0, decoded.length - 2);
-  const checksum = decoded.subarray(decoded.length - 2);
-  const expected = crc16XModem(payload);
-
-  // Checksum is stored little-endian.
-  const actual = checksum[0] | (checksum[1] << 8);
-  return actual === expected;
+  return false;
 }
 
-/** Accepts both account (`G…`) and contract (`C…`) StrKeys. */
+/** Accepts both account (`G...`) and contract (`C...`) StrKeys. */
 export const recipientSchema = z
   .string()
   .min(1, "Recipient is required")
   .refine((val) => isValidStrKey(val, ["G", "C"]), {
-    message: "Must be a valid Stellar address (G… or C…)",
+    message: "Must be a valid Stellar address (G... or C...)",
   });
 
 /** Supported assets for this issue: native XLM and a hardcoded test token. */

@@ -7,9 +7,9 @@ import {
   sendSchema,
 } from "@/lib/validation/send";
 
-// Real, checksum-valid StrKeys generated for these tests.
-const VALID_G = "GAGRIGZCFEYDOPSFJRJVUYLIN53H3BELSKM2BJ5OWW6MHSWR3DP6NIYZ";
-const VALID_C = "CAGRIGZCFEYDOPSFJRJVUYLIN53H3BELSKM2BJ5OWW6MHSWR3DP6MUZM";
+// Real, checksum-valid StrKeys from actual testnet deployments.
+const VALID_G = "GBWUF6VB7ZLK5EZI46SSPNNVWOM4X3X64KQYN6BCVILFD3AQMAIETKMC";
+const VALID_C = "CDF4P7N4QGYOH4NYSTJR4SJFE5SQXGD2LXSNBQWMI5MOS35KLCNUGU2S";
 
 describe("isValidStrKey", () => {
   it("accepts a well-formed G address", () => {
@@ -25,7 +25,9 @@ describe("isValidStrKey", () => {
   });
 
   it("rejects a bad checksum (single flipped character)", () => {
-    const flipped = `GB${VALID_G.slice(2)}`;
+    // Flip a payload byte so the CRC no longer matches. Keep the length and
+    // the G prefix so the only error is the checksum.
+    const flipped = `${VALID_G.slice(0, 5)}X${VALID_G.slice(6)}`;
     expect(isValidStrKey(flipped, ["G", "C"])).toBe(false);
   });
 
