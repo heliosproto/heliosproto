@@ -11,7 +11,8 @@ import {
 
 export const TESTNET_RPC = "https://soroban-testnet.stellar.org";
 export const TESTNET_PASSPHRASE = Networks.TESTNET;
-export const FACTORY_CONTRACT_ID = "CD5QVHYLGH3KYO6QHFSU4BRQ524VJJMDD7BGU7F4NO2U4BNJGWYWQVGH";
+export const FACTORY_CONTRACT_ID = "CDF4P7N4QGYOH4NYSTJR4SJFE5SQXGD2LXSNBQWMI5MOS35KLCNUGU2S";
+export const SESSION_KEYS_CONTRACT_ID = "CCT6CXGBMVTCN62JDEIU5O3SXJI3R7KTWOPC5F2MSGINCTPUYXKKURNH";
 export const FRIENDBOT_URL = "https://friendbot.stellar.org";
 export const EXPLORER_BASE = "https://stellar.expert/explorer/testnet";
 

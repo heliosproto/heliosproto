@@ -1,11 +1,14 @@
 {
   "network": "testnet",
   "deployer": "GBWUF6VB7ZLK5EZI46SSPNNVWOM4X3X64KQYN6BCVILFD3AQMAIETKMC",
-  "smart_account_wasm_hash": "384450f525bbe877cbf3c41b0b1340ddb617d4d04a104c1ba8118d015e4cf0b6",
-  "factory_wasm_hash": "264d28a834c0198a38feca924413a8a3b3621d1fcf3f42fe7fdf5fdfa272eafa",
-  "factory_contract_id": "CD5QVHYLGH3KYO6QHFSU4BRQ524VJJMDD7BGU7F4NO2U4BNJGWYWQVGH",
+  "smart_account_wasm_hash": "b2a021e2b16c92c33e1815e9b4d3f239f0f8ff4f1198bd14d77f97c23d95b486",
+  "factory_wasm_hash": "84f783f96fed20fde48b1b70ef1aad9472bf0ba0ecfc04e030cee81f985a4d3f",
+  "session_keys_wasm_hash": "312823b4418f21971f99f56d31a15ded9e43e113462888887241f1d7536d733f",
+  "session_keys_contract_id": "CCT6CXGBMVTCN62JDEIU5O3SXJI3R7KTWOPC5F2MSGINCTPUYXKKURNH",
+  "factory_contract_id": "CDF4P7N4QGYOH4NYSTJR4SJFE5SQXGD2LXSNBQWMI5MOS35KLCNUGU2S",
   "verification": {
-    "credential_id_hex": "68656c696f73707261746f2d64617931",
-    "deployed_account": "CB3RGBH4SDH22ECLPLJUB3YMHX6RZWGJN3VSOBUFJ5XQRQVUBMF7DF4M"
+    "credential_id_hex": "68656c696f73707261746f2d64617937",
+    "deployed_account": "CDIIWUWVDGCWYIZHBOMAFXRE3UVMSMCFSGYTGNQBFU2DRQKSLWP5LHFU",
+    "plugin_wired": true
   }
 }
