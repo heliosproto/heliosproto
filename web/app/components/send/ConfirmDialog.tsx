@@ -1,15 +1,14 @@
 "use client";
 
+import { Fingerprint, ShieldAlert } from "lucide-react";
 import { useEffect, useRef } from "react";
 import type { SimulationResult } from "@/components/send/types";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 
 interface ConfirmDialogProps {
   open: boolean;
   simulation: SimulationResult;
-  /** User confirms the final submission. */
   onConfirm: () => void;
-  /** User cancels (button, backdrop, or Escape). */
   onCancel: () => void;
 }
 
@@ -42,31 +41,71 @@ export function ConfirmDialog({ open, simulation, onConfirm, onCancel }: Confirm
         aria-label="Close dialog"
         tabIndex={-1}
         onClick={onCancel}
-        className="absolute inset-0 cursor-default bg-black/50"
+        className="absolute inset-0 cursor-default bg-background/80 backdrop-blur-sm"
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-description"
-        className="relative z-10 w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-6 shadow-xl dark:border-neutral-800 dark:bg-neutral-900"
+        className="relative z-10 flex w-full max-w-md flex-col gap-5 rounded-3xl border border-border bg-card p-7 shadow-[0_20px_60px_-20px_color-mix(in_oklch,var(--watermelon)_25%,transparent)] animate-in fade-in-0 zoom-in-95 duration-200"
       >
-        <h2 id="confirm-dialog-title" className="text-lg font-semibold">
-          Confirm send
-        </h2>
-        <p id="confirm-dialog-description" className="mt-1 text-sm text-neutral-500">
-          You're about to send {simulation.amount} {simulation.asset} to{" "}
-          <span className="break-all font-mono text-neutral-700 dark:text-neutral-300">
-            {simulation.destination}
-          </span>
-          . This action can't be undone.
-        </p>
+        <div
+          className="flex h-12 w-12 items-center justify-center rounded-2xl"
+          style={{
+            background:
+              "linear-gradient(135deg, color-mix(in oklch, var(--watermelon) 22%, transparent), color-mix(in oklch, var(--mint) 10%, transparent))",
+            border: "1px solid color-mix(in oklch, var(--watermelon) 25%, transparent)",
+          }}
+        >
+          <Fingerprint className="h-6 w-6 text-watermelon" aria-hidden />
+        </div>
 
-        <div className="mt-6 flex gap-3">
-          <Button variant="secondary" onClick={onCancel} className="flex-1">
+        <div className="flex flex-col gap-2">
+          <h2
+            id="confirm-dialog-title"
+            className="font-display text-xl font-semibold tracking-tight"
+          >
+            Confirm send
+          </h2>
+          <p id="confirm-dialog-description" className="text-sm text-muted-foreground">
+            You are about to send{" "}
+            <span className="font-semibold text-foreground">
+              {simulation.amount} {simulation.asset}
+            </span>{" "}
+            to{" "}
+            <span className="break-all font-mono text-xs text-foreground">
+              {simulation.destination.slice(0, 6)}...{simulation.destination.slice(-6)}
+            </span>
+            . This action cannot be undone once the transaction clears.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+          <ShieldAlert className="h-3.5 w-3.5 shrink-0 text-watermelon" aria-hidden />
+          <span>
+            Signed with your passkey as Soroban auth; the estimated fee is{" "}
+            <span className="font-medium text-foreground">{simulation.feeEstimateXlm} XLM</span>.
+          </span>
+        </div>
+
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={onCancel}
+            className="h-11 flex-1"
+          >
             Cancel
           </Button>
-          <Button ref={confirmRef} onClick={onConfirm} className="flex-1">
+          <Button
+            ref={confirmRef}
+            type="button"
+            size="lg"
+            onClick={onConfirm}
+            className="h-11 flex-1 border-0 bg-watermelon text-sm font-semibold text-watermelon-foreground shadow-[0_8px_24px_-8px_color-mix(in_oklch,var(--watermelon)_60%,transparent)] transition-transform hover:bg-punch hover:translate-y-[-1px]"
+          >
             Send
           </Button>
         </div>
