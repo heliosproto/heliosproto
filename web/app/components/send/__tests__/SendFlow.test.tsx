@@ -1,11 +1,30 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import SendPage from "@/app/app/send/page";
 import { ConfirmDialog } from "@/components/send/ConfirmDialog";
 import type { SimulationResult } from "@/components/send/types";
 
 const VALID_G = "GAGRIGZCFEYDOPSFJRJVUYLIN53H3BELSKM2BJ5OWW6MHSWR3DP6NIYZ";
+const SMART_ACCOUNT = "CDIIWUWVDGCWYIZHBOMAFXRE3UVMSMCFSGYTGNQBFU2DRQKSLWP5LHFU";
+
+vi.mock("@/lib/credential-store", () => ({
+  loadCredential: vi.fn(async () => ({
+    credentialId: new Uint8Array([1, 2, 3]),
+    publicKey: new Uint8Array(32),
+    createdAt: 0,
+    smartAccountAddress: SMART_ACCOUNT,
+  })),
+}));
+
+vi.mock("@/lib/send-client", () => ({
+  simulateTransferXlm: vi.fn(async () => ({
+    success: true,
+    minResourceFeeStroops: 100n,
+    totalFeeStroops: 200n,
+    latestLedger: 123,
+  })),
+}));
 
 const simulation: SimulationResult = {
   destination: VALID_G,
@@ -45,24 +64,33 @@ describe("ConfirmDialog", () => {
 });
 
 describe("Send flow (page)", () => {
+  beforeEach(async () => {
+    const { simulateTransferXlm } = await import("@/lib/send-client");
+    (simulateTransferXlm as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      success: true,
+      minResourceFeeStroops: 100n,
+      totalFeeStroops: 200n,
+      latestLedger: 123,
+    });
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("does not show the confirmation dialog before a valid submit", () => {
+  it("does not show the confirmation dialog before a valid submit", async () => {
     render(<SendPage />);
+    // Wait for the loaded form to appear.
+    await screen.findByRole("button", { name: "Review transaction" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    // Still on the form step.
-    expect(screen.getByRole("button", { name: "Review transaction" })).toBeInTheDocument();
   });
 
   it("does not open the dialog when submit is invalid", async () => {
     const user = userEvent.setup();
     render(<SendPage />);
-    await user.click(screen.getByRole("button", { name: "Review transaction" }));
+    await user.click(await screen.findByRole("button", { name: "Review transaction" }));
     expect(await screen.findByText("Recipient is required")).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    // Preview should not appear either.
     expect(screen.queryByRole("region", { name: "Simulation preview" })).not.toBeInTheDocument();
   });
 
@@ -70,16 +98,15 @@ describe("Send flow (page)", () => {
     const user = userEvent.setup();
     render(<SendPage />);
 
-    await user.type(screen.getByLabelText("Recipient"), VALID_G);
+    await user.type(await screen.findByLabelText("Recipient"), VALID_G);
     await user.type(screen.getByLabelText("Amount"), "5");
     await user.click(screen.getByRole("button", { name: "Review transaction" }));
 
-    // Preview shows mocked simulation; dialog still closed.
     expect(await screen.findByRole("region", { name: "Simulation preview" })).toBeInTheDocument();
-    expect(screen.getByText("0.0000100 XLM")).toBeInTheDocument();
+    // Real simulate mock returns 200 stroops = 0.00002 XLM.
+    expect(screen.getByText("0.00002 XLM")).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 
-    // Confirm opens the dialog.
     await user.click(screen.getByRole("button", { name: "Confirm" }));
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });
@@ -89,7 +116,7 @@ describe("Send flow (page)", () => {
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
     render(<SendPage />);
 
-    await user.type(screen.getByLabelText("Recipient"), VALID_G);
+    await user.type(await screen.findByLabelText("Recipient"), VALID_G);
     await user.type(screen.getByLabelText("Amount"), "5");
     await user.click(screen.getByRole("button", { name: "Review transaction" }));
     await user.click(await screen.findByRole("button", { name: "Confirm" }));
@@ -101,7 +128,6 @@ describe("Send flow (page)", () => {
         expect.objectContaining({ recipient: VALID_G, amount: "5" }),
       ),
     );
-    // Dialog closes after confirming.
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 });
