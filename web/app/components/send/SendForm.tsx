@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ASSETS, MEMO_MAX_LENGTH, type SendFormValues, sendSchema } from "@/lib/validation/send";
+import { MEMO_MAX_LENGTH, type SendFormValues, sendSchema } from "@/lib/validation/send";
 
 interface SendFormProps {
   onValidSubmit: (values: SendFormValues) => void;
@@ -38,7 +38,10 @@ export function SendForm({ onValidSubmit, defaultValues }: SendFormProps) {
     formState: { errors, isSubmitted },
   } = useForm<SendFormValues>({
     resolver: zodResolver(sendSchema),
-    mode: "onBlur",
+    // onTouched validates on first blur and then revalidates on every change,
+    // so a corrected value immediately clears its own error. onBlur-only kept
+    // the error red until the next blur, which felt broken.
+    mode: "onTouched",
     defaultValues: { ...EMPTY_DEFAULTS, ...defaultValues },
   });
 
@@ -71,23 +74,26 @@ export function SendForm({ onValidSubmit, defaultValues }: SendFormProps) {
 
       <div className="flex flex-col gap-2">
         <FieldLabel htmlFor="asset">Asset</FieldLabel>
-        <select
+        <div
           id="asset"
-          aria-invalid={Boolean(errors.asset)}
-          className="h-11 w-full min-w-0 rounded-lg border border-input bg-transparent px-3 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
-          {...register("asset")}
+          className="flex h-11 w-full items-center justify-between rounded-lg border border-input bg-muted/30 px-3 text-sm"
         >
-          {ASSETS.map((asset) => (
-            <option key={asset.code} value={asset.code}>
-              {asset.label}
-            </option>
-          ))}
-        </select>
-        {errors.asset && (
-          <p role="alert" className="text-xs text-destructive">
-            {errors.asset.message}
-          </p>
-        )}
+          <span className="flex items-center gap-2">
+            <span
+              aria-hidden
+              className="inline-block h-5 w-5 rounded-full"
+              style={{
+                background: "linear-gradient(135deg, var(--watermelon), var(--punch))",
+              }}
+            />
+            <span className="font-medium">XLM</span>
+            <span className="text-muted-foreground">native</span>
+          </span>
+          <span className="font-mono text-[10px] tracking-wider text-muted-foreground uppercase">
+            More assets soon
+          </span>
+        </div>
+        <input type="hidden" {...register("asset")} value="XLM" />
       </div>
 
       <div className="flex flex-col gap-2">
