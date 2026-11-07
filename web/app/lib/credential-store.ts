@@ -10,6 +10,14 @@ interface StoredCredential {
   publicKey: Uint8Array;
   createdAt: number;
   smartAccountAddress?: string;
+  /**
+   * Smart-account's `__check_auth` nonce as last observed by this client.
+   * Starts at 0 immediately after deploy; incremented locally after each
+   * successful broadcast. If the account is authorized through another
+   * client, this value will drift and sends will fail with BadNonce until
+   * the user refreshes state.
+   */
+  accountNonce?: bigint;
 }
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
@@ -61,7 +69,21 @@ export async function storeSmartAccountAddress(address: string): Promise<void> {
   if (!existing) {
     throw new Error("Cannot store smart-account address before a credential exists.");
   }
-  const updated: StoredCredential = { ...existing, smartAccountAddress: address };
+  const updated: StoredCredential = {
+    ...existing,
+    smartAccountAddress: address,
+    accountNonce: 0n,
+  };
+  await db.put(STORE_NAME, updated, CREDENTIAL_KEY);
+}
+
+export async function storeAccountNonce(nonce: bigint): Promise<void> {
+  const db = await getDB();
+  const existing = (await db.get(STORE_NAME, CREDENTIAL_KEY)) as StoredCredential | undefined;
+  if (!existing) {
+    throw new Error("Cannot store account nonce before a credential exists.");
+  }
+  const updated: StoredCredential = { ...existing, accountNonce: nonce };
   await db.put(STORE_NAME, updated, CREDENTIAL_KEY);
 }
 

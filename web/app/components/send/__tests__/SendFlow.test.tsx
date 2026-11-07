@@ -14,7 +14,13 @@ vi.mock("@/lib/credential-store", () => ({
     publicKey: new Uint8Array(32),
     createdAt: 0,
     smartAccountAddress: SMART_ACCOUNT,
+    accountNonce: 0n,
   })),
+  storeAccountNonce: vi.fn(async () => undefined),
+}));
+
+vi.mock("@/lib/factory-client", () => ({
+  mockPubkeyFromCredential: vi.fn(async () => new Uint8Array(32)),
 }));
 
 vi.mock("@/lib/send-client", () => ({
@@ -23,6 +29,12 @@ vi.mock("@/lib/send-client", () => ({
     minResourceFeeStroops: 100n,
     totalFeeStroops: 200n,
     latestLedger: 123,
+  })),
+  broadcastTransferXlm: vi.fn(async () => ({
+    success: true,
+    txHash: "aaaa0000bbbb1111cccc2222dddd3333",
+    explorerUrl: "https://stellar.expert/explorer/testnet/tx/aaaa0000bbbb1111cccc2222dddd3333",
+    nextAccountNonce: 1n,
   })),
 }));
 
@@ -65,12 +77,18 @@ describe("ConfirmDialog", () => {
 
 describe("Send flow (page)", () => {
   beforeEach(async () => {
-    const { simulateTransferXlm } = await import("@/lib/send-client");
+    const { simulateTransferXlm, broadcastTransferXlm } = await import("@/lib/send-client");
     (simulateTransferXlm as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       success: true,
       minResourceFeeStroops: 100n,
       totalFeeStroops: 200n,
       latestLedger: 123,
+    });
+    (broadcastTransferXlm as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      success: true,
+      txHash: "aaaa0000bbbb1111cccc2222dddd3333",
+      explorerUrl: "https://stellar.expert/explorer/testnet/tx/aaaa0000bbbb1111cccc2222dddd3333",
+      nextAccountNonce: 1n,
     });
   });
 
@@ -111,9 +129,8 @@ describe("Send flow (page)", () => {
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });
 
-  it("logs the payload placeholder when the dialog is confirmed", async () => {
+  it("broadcasts and shows the explorer link when the dialog is confirmed", async () => {
     const user = userEvent.setup();
-    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
     render(<SendPage />);
 
     await user.type(await screen.findByLabelText("Recipient"), VALID_G);
@@ -122,12 +139,15 @@ describe("Send flow (page)", () => {
     await user.click(await screen.findByRole("button", { name: "Confirm" }));
     await user.click(await screen.findByRole("button", { name: "Send" }));
 
-    await waitFor(() =>
-      expect(logSpy).toHaveBeenCalledWith(
-        "would submit",
-        expect.objectContaining({ recipient: VALID_G, amount: "5" }),
-      ),
-    );
+    // Dialog closes while broadcast is in flight.
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+
+    // Broadcasted state surfaces the tx hash and explorer link.
+    await waitFor(() =>
+      expect(screen.getByText("aaaa0000bbbb1111cccc2222dddd3333")).toBeInTheDocument(),
+    );
+    expect(screen.getByRole("link", { name: /Stellar Expert/ }).getAttribute("href")).toContain(
+      "aaaa0000bbbb1111cccc2222dddd3333",
+    );
   });
 });
