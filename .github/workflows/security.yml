@@ -77,7 +77,10 @@ jobs:
         run: pip install -e ".[dev]" pip-audit
 
       - name: pip-audit
-        # --skip-editable: do not try to resolve heliosproto-api itself on
-        # PyPI; it is the local project package, not a public dep. Audit
-        # scope is the installed third-party packages.
-        run: pip-audit --strict --skip-editable
+        # --skip-editable keeps the audit focused on installed third-party
+        # packages; heliosproto-api itself is the local project package and
+        # is not on PyPI. --strict is dropped because it treats any skipped
+        # distribution (including editables) as an error, which conflicts
+        # with --skip-editable. The audit still exits non-zero on real
+        # vulnerabilities.
+        run: pip-audit --skip-editable
