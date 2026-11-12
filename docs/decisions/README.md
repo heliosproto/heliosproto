@@ -13,3 +13,6 @@ Each record has five sections: **Status**, **Context** (the problem), **Decision
 | ADR | Title | Status |
 |-----|-------|--------|
 | [001](./001-plugin-architecture.md) | Plugin Architecture | Accepted |
+| [002](./002-ai-contributor-governance.md) | AI Contributor Governance | Proposed |
+
+Where an ADR affects non-engineering stakeholders, a plain-English companion lives alongside it with the suffix `-for-dummies.md`.

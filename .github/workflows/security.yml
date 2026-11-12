@@ -1,0 +1,86 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly re-audit so a vulnerability disclosed after merge still gets caught.
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  web-audit:
+    name: pnpm audit (web)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: pnpm audit (fail on high/critical)
+        run: pnpm audit --audit-level high --prod
+
+  contracts-audit:
+    name: cargo audit (contracts)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-audit
+        run: cargo install --locked cargo-audit
+
+      - name: cargo audit
+        # Do not --deny warnings. Unmaintained-crate advisories ride along
+        # on Soroban SDK's transitive graph and would permanently red the
+        # gate without being exploitable in our context.
+        #
+        # RUSTSEC-2026-0387 (crypto-bigint timing variability) is ignored
+        # because it reaches us only via Soroban SDK's host-side crypto
+        # dependencies; no fix exists until Stellar upgrades the SDK.
+        # Re-evaluate when the next Soroban SDK release lands.
+        run: cargo audit --ignore RUSTSEC-2026-0387
+
+  backend-audit:
+    name: pip-audit (backend/api)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install project with dev extras
+        run: pip install -e ".[dev]" pip-audit
+
+      - name: pip-audit
+        # --skip-editable keeps the audit focused on installed third-party
+        # packages; heliosproto-api itself is the local project package and
+        # is not on PyPI. --strict is dropped because it treats any skipped
+        # distribution (including editables) as an error, which conflicts
+        # with --skip-editable. The audit still exits non-zero on real
+        # vulnerabilities.
+        run: pip-audit --skip-editable
