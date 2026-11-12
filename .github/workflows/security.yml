@@ -1,0 +1,72 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly re-audit so a vulnerability disclosed after merge still gets caught.
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  web-audit:
+    name: pnpm audit (web)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: pnpm audit (fail on high/critical)
+        run: pnpm audit --audit-level high --prod
+
+  contracts-audit:
+    name: cargo audit (contracts)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-audit
+        run: cargo install --locked cargo-audit
+
+      - name: cargo audit
+        run: cargo audit --deny warnings
+
+  backend-audit:
+    name: pip-audit (backend/api)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install project with dev extras
+        run: pip install -e ".[dev]" pip-audit
+
+      - name: pip-audit
+        run: pip-audit --strict

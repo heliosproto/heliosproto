@@ -1,0 +1,6 @@
+# CODEOWNERS for heliosproto.
+# Every path in this repo is owned by the maintainer; every PR requires
+# their approval before merge once branch protection requires a review
+# from a code owner. See docs/decisions/002-ai-contributor-governance.md
+# for the full governance proposal.
+*       @Labi-Joy
